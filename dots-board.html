@@ -231,7 +231,7 @@
 <body>
   <h1>Dots <span>Board</span></h1>
   <p class="subtitle">
-    Two players, 12 dots each. Move one step across (up, down, left, or right).
+    Two players, 12 dots each. Move one step diagonally on black squares only.
     Capture by landing on an opponent. Player 2 uses red (color was not specified).
   </p>
 
@@ -267,8 +267,8 @@
   </div>
 
   <p class="rules">
-    Click your dot, then click a highlighted square one step across.
-    You may move onto an empty square or capture an enemy dot.
+    Click your dot, then click a highlighted black square one diagonal step away.
+    Dots stay on black blocks only. You may move onto an empty square or capture an enemy dot.
     Win by capturing all 12 of the opponent's dots, or when they have no legal moves.
   </p>
 
@@ -321,19 +321,23 @@
       return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
     }
 
-    /** One step across: orthogonal only */
+    function isBlackSquare(r, c) {
+      return squareColor(r, c) === "black";
+    }
+
+    /** One step on black only: diagonal (black → black) */
     function getMoves(r, c, player) {
       const moves = [];
       const dirs = [
-        [-1, 0],
-        [1, 0],
-        [0, -1],
-        [0, 1],
+        [-1, -1],
+        [-1, 1],
+        [1, -1],
+        [1, 1],
       ];
       for (const [dr, dc] of dirs) {
         const nr = r + dr;
         const nc = c + dc;
-        if (!inBounds(nr, nc)) continue;
+        if (!inBounds(nr, nc) || !isBlackSquare(nr, nc)) continue;
         const cell = board[nr][nc];
         if (cell === EMPTY || cell !== player) {
           moves.push([nr, nc]);
