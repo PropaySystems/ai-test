@@ -81,3 +81,15 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 11:23
+
+**User prompt:**
+
+- show the taken dots in real time
+
+**Images or references:**
+
+None provided

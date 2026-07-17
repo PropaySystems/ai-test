@@ -33,6 +33,7 @@ Uses Node’s built-in test runner against the pure rules engine and player-sett
 - **Drag and drop** — pointer-based mouse/touch dragging; click and keyboard still work
 - **Full rules** — mandatory captures, enforced double/multi-jumps, kings (including continuing after crowning), and both win conditions
 - **Winner crown** — the winning player receives a crowned celebration with a quick rematch action
+- **Taken pieces** — captured dots appear live on each player card and beside the board
 
 ## Module architecture
 

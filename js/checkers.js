@@ -10,6 +10,7 @@ import {
   FORWARD_DELTAS,
   KING_ROWS,
   PIECE_TYPES,
+  PIECES_PER_PLAYER,
   PLAYERS,
   isDarkSquare,
 } from './constants.js';
@@ -276,6 +277,15 @@ export function countPieces(board, player) {
   }
 
   return count;
+}
+
+/**
+ * How many of the opponent's pieces this player has captured.
+ * Derived from remaining pieces so it stays accurate after every jump.
+ */
+export function countCapturedBy(board, player) {
+  const remaining = countPieces(board, opponentOf(player));
+  return Math.max(0, PIECES_PER_PLAYER - remaining);
 }
 
 /**

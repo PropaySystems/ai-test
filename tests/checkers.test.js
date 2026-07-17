@@ -5,6 +5,7 @@ import { PIECE_TYPES, PLAYERS } from '../js/constants.js';
 import {
   applyMove,
   cloneBoard,
+  countCapturedBy,
   countPieces,
   createEmptyBoard,
   createInitialBoard,
@@ -113,6 +114,16 @@ describe('captures', () => {
     assert.equal(next[4][3], null);
     assert.equal(next[5][2], null);
     assert.equal(next[3][4]?.player, PLAYERS.BLACK);
+  });
+
+  it('tracks taken pieces from remaining opponent count', () => {
+    const board = createInitialBoard();
+    assert.equal(countCapturedBy(board, PLAYERS.BLACK), 0);
+    assert.equal(countCapturedBy(board, PLAYERS.RED), 0);
+
+    board[2][1] = null;
+    assert.equal(countCapturedBy(board, PLAYERS.BLACK), 1);
+    assert.equal(countPieces(board, PLAYERS.RED), 11);
   });
 
   it('makes captures mandatory when any jump is available', () => {

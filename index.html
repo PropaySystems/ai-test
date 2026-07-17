@@ -33,10 +33,16 @@
               <p class="player-card__side">Bottom · Black side</p>
               <h2 id="name-black">Player One</h2>
               <p class="player-card__count">
-                <span id="count-black">12</span> pieces
+                <span id="count-black">12</span> left ·
+                <span id="taken-count-black">0</span> taken
               </p>
             </div>
             <span class="player-card__turn" hidden>To move</span>
+            <div
+              class="taken-tray"
+              id="taken-black"
+              aria-label="Pieces taken by bottom player"
+            ></div>
           </article>
 
           <article class="player-card" id="card-red" data-side="red">
@@ -47,10 +53,16 @@
               <p class="player-card__side">Top · Red side</p>
               <h2 id="name-red">Player Two</h2>
               <p class="player-card__count">
-                <span id="count-red">12</span> pieces
+                <span id="count-red">12</span> left ·
+                <span id="taken-count-red">0</span> taken
               </p>
             </div>
             <span class="player-card__turn" hidden>To move</span>
+            <div
+              class="taken-tray"
+              id="taken-red"
+              aria-label="Pieces taken by top player"
+            ></div>
           </article>
 
           <div class="turn-badge" id="turn-badge" data-player="black">
@@ -70,8 +82,15 @@
         </section>
 
         <section class="board-stage" aria-label="Checkers board">
-          <div class="player-label player-label--top" id="label-red">
-            Player Two
+          <div class="board-rail board-rail--top">
+            <div class="player-label player-label--top" id="label-red">
+              Player Two
+            </div>
+            <div
+              class="taken-tray taken-tray--rail"
+              id="taken-rail-red"
+              aria-hidden="true"
+            ></div>
           </div>
           <div
             id="board"
@@ -79,8 +98,15 @@
             role="grid"
             aria-label="8 by 8 checkers board"
           ></div>
-          <div class="player-label player-label--bottom" id="label-black">
-            Player One
+          <div class="board-rail board-rail--bottom">
+            <div class="player-label player-label--bottom" id="label-black">
+              Player One
+            </div>
+            <div
+              class="taken-tray taken-tray--rail"
+              id="taken-rail-black"
+              aria-hidden="true"
+            ></div>
           </div>
           <p class="board-hint" id="hint-caption" hidden></p>
         </section>

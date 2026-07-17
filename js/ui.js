@@ -5,11 +5,13 @@
 
 import { BOARD_SIZE, PIECE_TYPES, PLAYERS, isDarkSquare } from './constants.js';
 import {
+  countCapturedBy,
   countPieces,
   createInitialState,
   getLegalMovesFrom,
   getPiece,
   handleSquareAction,
+  opponentOf,
   positionsEqual,
   resetGame,
   suggestMove,
@@ -33,6 +35,11 @@ export function createGameUI(elements) {
   let hintedMove = null;
   let dragSession = null;
   let suppressClickUntil = 0;
+  /** @type {Record<string, number>} */
+  let previousTaken = {
+    [PLAYERS.BLACK]: 0,
+    [PLAYERS.RED]: 0,
+  };
 
   populatePaletteSelects();
   bindControls();
@@ -85,6 +92,7 @@ export function createGameUI(elements) {
 
   function render() {
     renderPlayers();
+    renderTaken();
     renderBoard();
     renderStatus();
     renderHintCaption();
@@ -103,6 +111,10 @@ export function createGameUI(elements) {
       const cardEl = side === PLAYERS.BLACK ? elements.cardBlack : elements.cardRed;
       const countEl =
         side === PLAYERS.BLACK ? elements.countBlackEl : elements.countRedEl;
+      const takenCountEl =
+        side === PLAYERS.BLACK
+          ? elements.takenCountBlack
+          : elements.takenCountRed;
 
       if (nameEl) nameEl.textContent = name;
       if (labelEl) labelEl.textContent = name;
@@ -113,6 +125,9 @@ export function createGameUI(elements) {
       }
       if (countEl) {
         countEl.textContent = String(countPieces(state.board, side));
+      }
+      if (takenCountEl) {
+        takenCountEl.textContent = String(countCapturedBy(state.board, side));
       }
       if (cardEl) {
         const isActive =
@@ -126,6 +141,45 @@ export function createGameUI(elements) {
           turnEl.textContent = isWinner ? 'Winner' : 'To move';
         }
       }
+    }
+  }
+
+  /**
+   * Paint live captured-piece dots for each side.
+   * Newest captures briefly pop in so jumps feel immediate.
+   */
+  function renderTaken() {
+    for (const side of [PLAYERS.BLACK, PLAYERS.RED]) {
+      const taken = countCapturedBy(state.board, side);
+      const enemy = opponentOf(side);
+      const palette = getPalette(settings.players[enemy].palette);
+      const trays = [
+        side === PLAYERS.BLACK ? elements.takenBlack : elements.takenRed,
+        side === PLAYERS.BLACK
+          ? elements.takenRailBlack
+          : elements.takenRailRed,
+      ].filter(Boolean);
+
+      const previous = previousTaken[side] ?? 0;
+
+      for (const tray of trays) {
+        tray.replaceChildren();
+        tray.dataset.count = String(taken);
+
+        for (let i = 0; i < taken; i += 1) {
+          const dot = document.createElement('span');
+          dot.className = 'taken-dot';
+          dot.style.setProperty('--piece-base', palette.base);
+          dot.style.setProperty('--piece-highlight', palette.highlight);
+          dot.style.setProperty('--piece-edge', palette.edge);
+          if (i >= previous) {
+            dot.classList.add('taken-dot--new');
+          }
+          tray.appendChild(dot);
+        }
+      }
+
+      previousTaken[side] = taken;
     }
   }
 
@@ -364,6 +418,10 @@ export function createGameUI(elements) {
 
   function onReset() {
     hintedMove = null;
+    previousTaken = {
+      [PLAYERS.BLACK]: 0,
+      [PLAYERS.RED]: 0,
+    };
     if (elements.winnerDialog?.open) {
       elements.winnerDialog.close();
     }

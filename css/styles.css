@@ -165,6 +165,10 @@ h1 {
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.player-card .taken-tray {
+  grid-column: 1 / -1;
+}
+
 .player-card--active {
   border-color: rgba(226, 179, 93, 0.8);
   box-shadow: 0 0 0 3px rgba(226, 179, 93, 0.18);
@@ -224,6 +228,62 @@ h1 {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--wood-dark);
+}
+
+.taken-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.28rem;
+  min-height: 1.15rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(45, 24, 14, 0.06);
+  border: 1px dashed rgba(107, 63, 36, 0.18);
+}
+
+.taken-tray:empty::before {
+  content: "No captures yet";
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.taken-tray--rail {
+  justify-content: center;
+  min-width: min(100%, 18rem);
+  background: rgba(255, 248, 236, 0.7);
+}
+
+.taken-tray--rail:empty {
+  display: none;
+}
+
+.taken-dot {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 32% 28%, var(--piece-highlight, #6a5f56), transparent 45%),
+    linear-gradient(160deg, var(--piece-highlight, #6a5f56), var(--piece-base, #1f1a17));
+  border: 1px solid var(--piece-edge, #4a4038);
+  box-shadow:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.22),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.taken-dot--new {
+  animation: taken-pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.board-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: min(100%, var(--board-size, 540px));
 }
 
 .turn-badge {
@@ -732,6 +792,21 @@ h1 {
   100% {
     opacity: 1;
     transform: translateX(-50%) translateY(0) rotate(-3deg) scale(1);
+  }
+}
+
+@keyframes taken-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) translateY(-6px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.25) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
