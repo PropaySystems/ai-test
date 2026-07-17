@@ -35,3 +35,15 @@ Okay, so Now, there is a little bit one more change that I want you to do. pleas
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 14:02
+
+**User prompt:**
+
+Okay, so I can still see the engine.py, CLI.py, board.py, like Python files. I don't think they should be there when we have converted everything into JavaScript, right?
+
+**Images or references:**
+
+None provided

@@ -204,12 +204,12 @@
   <details class="team-box" open>
     <summary>Team explanation — eight-module architecture</summary>
     <p>
-      This file is a pure-JavaScript port of the Python engine
-      (<code>board.py</code> / <code>engine.py</code>) plus a browser UI.
+      This file is the complete pure-JavaScript implementation of
+      <code>OFFICIAL_RULES.md</code> (engine + browser UI, no external dependencies).
       Board squares use zero-based <code>{ col, row }</code> with dark a1 at
       <code>(0,0)</code>. Moves use
-      <code>{ start, path, captures, isCapture }</code> — the same shape as the Python
-      <code>Move</code> dataclass. Factories build those plain objects; ES6 classes own behavior.
+      <code>{ start, path, captures, isCapture }</code>.
+      Factories build those plain objects; ES6 classes own behavior.
     </p>
     <ol>
       <li><strong>Constants</strong> — players, piece kinds, diagonals, draw limits</li>
@@ -230,8 +230,7 @@
  * -----------------------------------------------------------------------------
  * Single self-contained HTML file. Zero external dependencies.
  *
- * Port of the Python game package to pure JavaScript with the same rules from
- * OFFICIAL_RULES.md and the same eight-module split used by the browser app:
+ * Pure JavaScript implementation of OFFICIAL_RULES.md using an eight-module split:
  *
  *   1. Constants       — shared immutable values (class)
  *   2. BoardUtils      — coordinates + factories createSquare/Piece/Move (class)
@@ -292,7 +291,7 @@ class Constants {
 
 /**
  * Pure helpers for the 8×8 dark-square board.
- * Factories mirror the Python Piece / Move / square tuples.
+ * Factories build plain Piece / Move / square objects used across modules.
  */
 class BoardUtils {
   /**
@@ -316,7 +315,7 @@ class BoardUtils {
   }
 
   /**
-   * Factory: square object matching Python (col, row) tuples.
+   * Factory: square object { col, row }.
    * @param {number} col Zero-based file (0 = a)
    * @param {number} row Zero-based rank (0 = 1)
    * @returns {{col:number, row:number}}
@@ -326,7 +325,7 @@ class BoardUtils {
   }
 
   /**
-   * Factory: piece object matching Python Piece(owner, kind).
+   * Factory: piece object { owner, kind }.
    * @param {string} owner Constants.DARK | Constants.LIGHT
    * @param {string} [kind=Constants.MAN]
    * @returns {{owner:string, kind:string}}
@@ -336,7 +335,7 @@ class BoardUtils {
   }
 
   /**
-   * Factory: move object matching Python Move dataclass.
+   * Factory: move object { start, path, captures, isCapture }.
    * @param {object} parts
    * @param {{col:number, row:number}} parts.start
    * @param {Array<{col:number, row:number}>} parts.path Landing squares in order
@@ -474,7 +473,7 @@ class GameState {
   }
 
   /**
-   * Factory matching Python Board.initial() + Game defaults.
+   * Factory for a fresh initial game state.
    * @param {object|null} [snapshot]
    * @returns {GameState}
    */

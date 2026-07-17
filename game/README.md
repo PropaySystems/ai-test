@@ -2,15 +2,14 @@
 
 Turn-based two-player game on an 8×8 board (32 dark playable squares).
 
+Implemented as a **single self-contained HTML/JavaScript file** — no Python runtime and no external dependencies.
+
 ## Documents
 
 - [OFFICIAL_RULES.md](../OFFICIAL_RULES.md) — complete official rules (implementation source of truth)
+- [index.html](index.html) — pure JavaScript game (engine + UI)
 
 ## Run
-
-### Browser UI (self-contained HTML)
-
-Open the pure-JavaScript single-file app (eight ES6 modules + factories, no dependencies):
 
 ```bash
 open game/index.html
@@ -23,31 +22,30 @@ python3 -m http.server 8080
 # then visit http://localhost:8080/game/index.html
 ```
 
-Modules: Constants, BoardUtils, GameState, MoveGenerator, MoveValidator, GameEngine, UIRenderer, UIEventHandlers.  
-Factories: `createSquare`, `createPiece`, `createMove`, `createSelection`, plus `GameState.create` / `GameEngine.create` / `UIRenderer.create` / `UIEventHandlers.create`.  
-The page also includes a **Team explanation** section describing the architecture.
+## Architecture (eight modules)
 
-### Python CLI
+| Module | Role |
+|--------|------|
+| Constants | Players, piece kinds, diagonals, draw limits |
+| BoardUtils | Geometry, notation, `createSquare` / `createPiece` / `createMove` |
+| GameState | 8×8 dark-square piece map, turn, counters |
+| MoveGenerator | Quiet moves and maximal capture paths |
+| MoveValidator | Legal-move and multi-jump selection checks |
+| GameEngine | Apply turns, promotion, win/draw, undo |
+| UIRenderer | Board, highlights, status, history |
+| UIEventHandlers | Clicks, mandatory captures, multi-jump lock |
 
-```bash
-# Interactive play
-python3 -m game
+The page includes a **Team explanation** section with the same overview.
 
-# Short scripted demo
-python3 -m game --demo
+## How to play
 
-# Automated tests
-python3 -m game.test_engine
-```
+1. Open `index.html` in a browser
+2. Dark (Player 1) moves first — click a piece, then a green target
+3. Orange highlights mean a capture is mandatory
+4. Multi-jumps must be completed before the turn ends
+5. Use **New Game** / **Undo** as needed
 
-## How to play (CLI)
-
-1. Start with `python3 -m game`
-2. Type `list` to see legal moves
-3. Enter a move such as `c3-d4` or `c3xe5xg7`
-4. Players alternate; Dark (Player 1) moves first
-
-### Notation
+### Notation (move history)
 
 | Action | Format | Example |
 |--------|--------|---------|
@@ -56,6 +54,7 @@ python3 -m game.test_engine
 
 ### Board legend
 
-- `d` / `l` — Dark / Light standard piece
-- `K` / `Q` — Dark / Light king
-- `·` — non-playable light square
+- Dark / light discs — standard pieces
+- Crown (♛) — king
+- Orange outline — must capture
+- Green outline — legal target
