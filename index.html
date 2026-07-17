@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Darkboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0a1210;
+      --moss: #14302a;
+      --pine: #1e4038;
+      --stone: #a8bdb4;
+      --mist: #d7e4de;
+      --copper: #e08a3c;
+      --copper-dim: #b86b28;
+      --ember: #ffb35c;
+      --bone: #f3ebe0;
+      --charcoal: #141a18;
+      --text: #e8f0ec;
+      --muted: #8aa399;
+      --danger: #e06b5c;
+      --board-light: #c5d4cc;
+      --board-dark: #234840;
+      --frame: #0f1c18;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Outfit", sans-serif;
+      color: var(--text);
+      background: var(--ink);
+      overflow-x: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    /* Diagonal atmosphere */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      background:
+        repeating-linear-gradient(
+          -32deg,
+          transparent 0 48px,
+          rgba(224, 138, 60, 0.03) 48px 49px,
+          transparent 49px 96px
+        ),
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(30, 64, 56, 0.9), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 90% 90%, rgba(224, 138, 60, 0.12), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(20, 48, 42, 0.6), transparent 70%),
+        var(--ink);
+      animation: drift 28s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0, 0); }
+      to { transform: translate(-48px, 28px); }
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(220px, 260px) auto;
+      gap: 2rem;
+      align-items: center;
+      max-width: 960px;
+      width: 100%;
+      animation: riseIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes riseIn {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .brand-block {
+      margin-bottom: 1.5rem;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .brand-glyph {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--bone) 20%, var(--copper) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .tagline {
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.4rem;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .turn-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    .turn-side {
+      padding: 0.75rem 0.6rem;
+      text-align: center;
+      border: 1px solid rgba(168, 189, 180, 0.15);
+      background: rgba(15, 28, 24, 0.55);
+      transition: border-color 0.35s, background 0.35s, transform 0.35s;
+    }
+
+    .turn-side .label {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .turn-side .sub {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      opacity: 0.8;
+    }
+
+    .turn-side.active {
+      border-color: var(--copper);
+      background: rgba(224, 138, 60, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .turn-side.active .label {
+      color: var(--ember);
+    }
+
+    .turn-side.active .sub {
+      color: var(--copper);
+    }
+
+    .turn-side.dark .swatch {
+      background: var(--charcoal);
+      border-color: #3a4540;
+    }
+
+    .turn-side.light .swatch {
+      background: var(--bone);
+      border-color: #cfc4b4;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.35rem;
+    }
+
+    .racks {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .rack {
+      min-height: 2.2rem;
+    }
+
+    .rack-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .rack-pieces {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-height: 18px;
+    }
+
+    .mini-piece {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .mini-piece.dark {
+      background: radial-gradient(circle at 35% 30%, #3a4540, var(--charcoal));
+      border: 1px solid #4a5550;
+    }
+
+    .mini-piece.light {
+      background: radial-gradient(circle at 35% 30%, #fff, var(--bone));
+      border: 1px solid #cfc4b4;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .message {
+      min-height: 1.5em;
+      font-family: "Syne", sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--copper);
+      letter-spacing: 0.02em;
+    }
+
+    .message.win {
+      color: var(--ember);
+      animation: pulseMsg 1.2s ease-in-out infinite;
+    }
+
+    .message.alert {
+      color: var(--danger);
+    }
+
+    @keyframes pulseMsg {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+
+    button {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--copper);
+      cursor: pointer;
+      background: transparent;
+      color: var(--ember);
+      position: relative;
+      overflow: hidden;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+
+    button::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(224, 138, 60, 0.2) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+
+    button:hover {
+      background: rgba(224, 138, 60, 0.15);
+      color: var(--bone);
+    }
+
+    button:hover::before {
+      transform: translateX(100%);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+      border-top: 1px solid rgba(168, 189, 180, 0.12);
+      padding-top: 0.85rem;
+    }
+
+    /* Board stage */
+    .stage {
+      position: relative;
+      justify-self: center;
+    }
+
+    .board-frame {
+      position: relative;
+      padding: 14px;
+      background:
+        linear-gradient(145deg, #1a2e28 0%, var(--frame) 40%, #16261f 100%);
+      box-shadow:
+        0 0 0 1px rgba(224, 138, 60, 0.25),
+        0 24px 48px rgba(0, 0, 0, 0.55);
+    }
+
+    .board-frame::before,
+    .board-frame::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--copper);
+      opacity: 0.7;
+    }
+
+    .board-frame::before {
+      top: 6px;
+      left: 6px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .board-frame::after {
+      bottom: 6px;
+      right: 6px;
+      border-left: none;
+      border-top: none;
+    }
+
+    .corner-tr,
+    .corner-bl {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--copper);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .corner-tr {
+      top: 6px;
+      right: 6px;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .corner-bl {
+      bottom: 6px;
+      left: 6px;
+      border-right: none;
+      border-top: none;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      width: min(72vw, 520px);
+      aspect-ratio: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .square {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: filter 0.2s;
+    }
+
+    .square.light {
+      background:
+        linear-gradient(145deg, #d0ddd6 0%, var(--board-light) 100%);
+    }
+
+    .square.dark {
+      background:
+        linear-gradient(160deg, #2d5a50 0%, var(--board-dark) 55%, #1a3832 100%);
+      cursor: pointer;
+    }
+
+    .square.dark::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 6px,
+          rgba(0, 0, 0, 0.04) 6px 7px
+        );
+      pointer-events: none;
+    }
+
+    .square.last-from {
+      filter: brightness(1.15);
+    }
+
+    .square.last-to {
+      box-shadow: inset 0 0 0 2px rgba(224, 138, 60, 0.55);
+    }
+
+    .square.captured-flash {
+      animation: captureFlash 0.45s ease-out;
+    }
+
+    @keyframes captureFlash {
+      0% { background: var(--copper); }
+      100% { background: var(--board-dark); }
+    }
+
+    .square.selected {
+      z-index: 2;
+    }
+
+    .square.selected::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border: 2px solid var(--ember);
+      animation: selectPulse 1.4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes selectPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.96); }
+    }
+
+    .square.valid-move .hint-diamond {
+      position: absolute;
+      width: 22%;
+      height: 22%;
+      background: var(--copper);
+      transform: rotate(45deg);
+      opacity: 0.75;
+      animation: hintPulse 1.2s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .square.valid-move.has-piece .hint-diamond {
+      width: 72%;
+      height: 72%;
+      background: transparent;
+      border: 2px solid var(--ember);
+      opacity: 0.9;
+    }
+
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.95; }
+    }
+
+    .piece {
+      width: 74%;
+      height: 74%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 3;
+      position: relative;
+      transition: transform 0.2s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    .piece.movable {
+      animation: idleBreath 2.8s ease-in-out infinite;
+    }
+
+    @keyframes idleBreath {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+
+    .square.selected .piece {
+      transform: scale(1.12);
+      animation: none;
+    }
+
+    .piece.dark {
+      background:
+        radial-gradient(circle at 32% 28%, #3d4a45 0%, var(--charcoal) 55%, #0a0e0c 100%);
+      border: 2px solid #4a5852;
+      box-shadow:
+        inset 0 -4px 8px rgba(0, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.08),
+        0 3px 6px rgba(0, 0, 0, 0.45);
+    }
+
+    .piece.light {
+      background:
+        radial-gradient(circle at 32% 28%, #fffef9 0%, var(--bone) 50%, #d9cbb8 100%);
+      border: 2px solid #c9bba8;
+      box-shadow:
+        inset 0 -4px 8px rgba(100, 80, 50, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.6),
+        0 3px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    .piece .ring {
+      width: 58%;
+      height: 58%;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .piece.light .ring {
+      border-color: rgba(120, 90, 50, 0.18);
+    }
+
+    .piece.king .crown {
+      position: absolute;
+      font-size: clamp(0.65rem, 2.2vw, 0.95rem);
+      line-height: 1;
+      color: var(--copper);
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+      animation: crownIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .piece.light.king .crown {
+      color: var(--copper-dim);
+    }
+
+    @keyframes crownIn {
+      from { transform: scale(0) rotate(-20deg); opacity: 0; }
+      to { transform: scale(1) rotate(0); opacity: 1; }
+    }
+
+    .piece.just-promoted {
+      animation: promoteBurst 0.6s ease-out;
+    }
+
+    @keyframes promoteBurst {
+      0% { transform: scale(1); filter: brightness(1); }
+      40% { transform: scale(1.25); filter: brightness(1.5); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    /* Win overlay */
+    .win-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 18, 16, 0.78);
+      backdrop-filter: blur(4px);
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+
+    .win-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .win-overlay h2 {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      color: var(--ember);
+      text-align: center;
+      animation: riseIn 0.5s ease both;
+    }
+
+    .win-overlay p {
+      margin-top: 0.4rem;
+      color: var(--mist);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 1.5rem;
+      }
+
+      .panel {
+        width: 100%;
+        max-width: min(72vw, 520px);
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .brand-mark {
+        justify-content: center;
+      }
+
+      .tagline {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <div class="brand-block">
+        <div class="brand-mark">
+          <svg class="brand-glyph" viewBox="0 0 36 36" aria-hidden="true">
+            <rect x="2" y="2" width="14" height="14" fill="#234840" />
+            <rect x="20" y="2" width="14" height="14" fill="#c5d4cc" />
+            <rect x="2" y="20" width="14" height="14" fill="#c5d4cc" />
+            <rect x="20" y="20" width="14" height="14" fill="#e08a3c" />
+            <path d="M8 28 L28 8" stroke="#e08a3c" stroke-width="2" fill="none" opacity="0.8" />
+          </svg>
+          <h1>Darkboard</h1>
+        </div>
+        <p class="tagline">Diagonal dominion</p>
+      </div>
+
+      <div class="turn-bar" id="turn-bar">
+        <div class="turn-side dark active" id="turn-dark" data-side="dark">
+          <div class="label"><span class="swatch"></span>Obsidian</div>
+          <div class="sub" id="sub-dark">Your move</div>
+        </div>
+        <div class="turn-side light" id="turn-light" data-side="light">
+          <div class="label"><span class="swatch"></span>Ivory</div>
+          <div class="sub" id="sub-light">Waiting</div>
+        </div>
+      </div>
+
+      <div class="racks">
+        <div class="rack">
+          <div class="rack-label">Taken · Obsidian</div>
+          <div class="rack-pieces" id="rack-dark"></div>
+        </div>
+        <div class="rack">
+          <div class="rack-label">Taken · Ivory</div>
+          <div class="rack-pieces" id="rack-light"></div>
+        </div>
+      </div>
+
+      <p class="message" id="message"></p>
+      <button type="button" id="new-game">New Match</button>
+      <p class="hint">
+        Slide on dark tiles only. Strike when you can — leaps are required. Crown at the far edge.
+      </p>
+    </aside>
+
+    <div class="stage">
+      <div class="board-frame">
+        <span class="corner-tr"></span>
+        <span class="corner-bl"></span>
+        <div class="board" id="board" role="grid" aria-label="Darkboard game board"></div>
+        <div class="win-overlay" id="win-overlay">
+          <h2 id="win-title">Victory</h2>
+          <p id="win-sub">The board is yours</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const SIZE = 8;
+      const DARK = "dark";
+      const LIGHT = "light";
+      const NAMES = { dark: "Obsidian", light: "Ivory" };
+
+      /** @type {(null|{color:string,king:boolean,id:number})[][]} */
+      let board = [];
+      let currentPlayer = DARK;
+      /** @type {{row:number,col:number}|null} */
+      let selected = null;
+      /** @type {{row:number,col:number}|null} */
+      let forcedJumpFrom = null;
+      let gameOver = false;
+      let winner = null;
+      let darkCaptured = 0;
+      let lightCaptured = 0;
+      let pieceId = 0;
+      /** @type {{from:{row:number,col:number},to:{row:number,col:number}}|null} */
+      let lastMove = null;
+      /** @type {{row:number,col:number}|null} */
+      let captureFlash = null;
+      /** @type {{row:number,col:number}|null} */
+      let promotedAt = null;
+
+      const boardEl = document.getElementById("board");
+      const messageEl = document.getElementById("message");
+      const rackDarkEl = document.getElementById("rack-dark");
+      const rackLightEl = document.getElementById("rack-light");
+      const turnDarkEl = document.getElementById("turn-dark");
+      const turnLightEl = document.getElementById("turn-light");
+      const subDarkEl = document.getElementById("sub-dark");
+      const subLightEl = document.getElementById("sub-light");
+      const winOverlay = document.getElementById("win-overlay");
+      const winTitle = document.getElementById("win-title");
+      const winSub = document.getElementById("win-sub");
+      const newGameBtn = document.getElementById("new-game");
+
+      function isDarkSquare(row, col) {
+        return (row + col) % 2 === 1;
+      }
+
+      function inBounds(row, col) {
+        return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
+      }
+
+      function opponent(color) {
+        return color === DARK ? LIGHT : DARK;
+      }
+
+      function forwardDirs(color) {
+        return color === DARK ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]];
+      }
+
+      function allDirs() {
+        return [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+      }
+
+      function pieceDirs(piece) {
+        return piece.king ? allDirs() : forwardDirs(piece.color);
+      }
+
+      function initBoard() {
+        board = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+        pieceId = 0;
+        for (let row = 0; row < SIZE; row++) {
+          for (let col = 0; col < SIZE; col++) {
+            if (!isDarkSquare(row, col)) continue;
+            if (row <= 2) {
+              board[row][col] = { color: LIGHT, king: false, id: pieceId++ };
+            } else if (row >= 5) {
+              board[row][col] = { color: DARK, king: false, id: pieceId++ };
+            }
+          }
+        }
+      }
+
+      function resetGame() {
+        initBoard();
+        currentPlayer = DARK;
+        selected = null;
+        forcedJumpFrom = null;
+        gameOver = false;
+        winner = null;
+        darkCaptured = 0;
+        lightCaptured = 0;
+        lastMove = null;
+        captureFlash = null;
+        promotedAt = null;
+        messageEl.textContent = "";
+        messageEl.className = "message";
+        winOverlay.classList.remove("show");
+        render();
+      }
+
+      function getJumps(row, col) {
+        const piece = board[row][col];
+        if (!piece) return [];
+        const jumps = [];
+        for (const [dr, dc] of pieceDirs(piece)) {
+          const midR = row + dr;
+          const midC = col + dc;
+          const landR = row + dr * 2;
+          const landC = col + dc * 2;
+          if (!inBounds(landR, landC)) continue;
+          const mid = board[midR][midC];
+          if (
+            mid &&
+            mid.color === opponent(piece.color) &&
+            board[landR][landC] === null &&
+            isDarkSquare(landR, landC)
+          ) {
+            jumps.push({
+              row: landR,
+              col: landC,
+              jumped: { row: midR, col: midC },
+            });
+          }
+        }
+        return jumps;
+      }
+
+      function getSteps(row, col) {
+        const piece = board[row][col];
+        if (!piece) return [];
+        const steps = [];
+        for (const [dr, dc] of pieceDirs(piece)) {
+          const r = row + dr;
+          const c = col + dc;
+          if (inBounds(r, c) && board[r][c] === null && isDarkSquare(r, c)) {
+            steps.push({ row: r, col: c, jumped: null });
+          }
+        }
+        return steps;
+      }
+
+      function getAllJumps(color) {
+        const all = [];
+        for (let row = 0; row < SIZE; row++) {
+          for (let col = 0; col < SIZE; col++) {
+            const piece = board[row][col];
+            if (!piece || piece.color !== color) continue;
+            for (const j of getJumps(row, col)) {
+              all.push({ from: { row, col }, ...j });
+            }
+          }
+        }
+        return all;
+      }
+
+      function playerHasAnyJump(color) {
+        return getAllJumps(color).length > 0;
+      }
+
+      function getLegalMoves(row, col) {
+        const piece = board[row][col];
+        if (!piece || piece.color !== currentPlayer) return [];
+
+        if (forcedJumpFrom) {
+          if (row !== forcedJumpFrom.row || col !== forcedJumpFrom.col) return [];
+          return getJumps(row, col);
+        }
+
+        if (playerHasAnyJump(currentPlayer)) {
+          return getJumps(row, col);
+        }
+
+        return getSteps(row, col);
+      }
+
+      function pieceHasLegalMoves(row, col) {
+        return getLegalMoves(row, col).length > 0;
+      }
+
+      function playerHasAnyMove(color) {
+        for (let row = 0; row < SIZE; row++) {
+          for (let col = 0; col < SIZE; col++) {
+            const piece = board[row][col];
+            if (!piece || piece.color !== color) continue;
+            const moves = playerHasAnyJump(color)
+              ? getJumps(row, col)
+              : getSteps(row, col);
+            if (moves.length > 0) return true;
+          }
+        }
+        return false;
+      }
+
+      function countPieces(color) {
+        let n = 0;
+        for (let row = 0; row < SIZE; row++) {
+          for (let col = 0; col < SIZE; col++) {
+            if (board[row][col]?.color === color) n++;
+          }
+        }
+        return n;
+      }
+
+      function promoteIfNeeded(row, col) {
+        const piece = board[row][col];
+        if (!piece || piece.king) return false;
+        if (piece.color === DARK && row === 0) {
+          piece.king = true;
+          return true;
+        }
+        if (piece.color === LIGHT && row === SIZE - 1) {
+          piece.king = true;
+          return true;
+        }
+        return false;
+      }
+
+      function checkWinner() {
+        if (countPieces(DARK) === 0) {
+          gameOver = true;
+          winner = LIGHT;
+          return;
+        }
+        if (countPieces(LIGHT) === 0) {
+          gameOver = true;
+          winner = DARK;
+          return;
+        }
+        if (!playerHasAnyMove(currentPlayer)) {
+          gameOver = true;
+          winner = opponent(currentPlayer);
+        }
+      }
+
+      function applyMove(fromRow, fromCol, toRow, toCol) {
+        const moves = getLegalMoves(fromRow, fromCol);
+        const move = moves.find((m) => m.row === toRow && m.col === toCol);
+        if (!move) return false;
+
+        const piece = board[fromRow][fromCol];
+        const wasKing = piece.king;
+        board[fromRow][fromCol] = null;
+        board[toRow][toCol] = piece;
+        lastMove = {
+          from: { row: fromRow, col: fromCol },
+          to: { row: toRow, col: toCol },
+        };
+        captureFlash = null;
+        promotedAt = null;
+
+        const wasJump = !!move.jumped;
+        if (wasJump) {
+          const jr = move.jumped.row;
+          const jc = move.jumped.col;
+          const captured = board[jr][jc];
+          board[jr][jc] = null;
+          captureFlash = { row: jr, col: jc };
+          if (captured.color === DARK) darkCaptured++;
+          else lightCaptured++;
+          setTimeout(() => {
+            captureFlash = null;
+            render();
+          }, 450);
+        }
+
+        if (promoteIfNeeded(toRow, toCol) && !wasKing) {
+          promotedAt = { row: toRow, col: toCol };
+        }
+
+        if (wasJump) {
+          const further = getJumps(toRow, toCol);
+          if (further.length > 0) {
+            forcedJumpFrom = { row: toRow, col: toCol };
+            selected = { row: toRow, col: toCol };
+            messageEl.textContent = "Keep striking…";
+            messageEl.className = "message";
+            return true;
+          }
+        }
+
+        forcedJumpFrom = null;
+        selected = null;
+        messageEl.textContent = "";
+        messageEl.className = "message";
+        currentPlayer = opponent(currentPlayer);
+        checkWinner();
+        return true;
+      }
+
+      function handleSquareClick(row, col) {
+        if (gameOver) return;
+        if (!isDarkSquare(row, col)) return;
+
+        if (forcedJumpFrom) {
+          const legal = getLegalMoves(forcedJumpFrom.row, forcedJumpFrom.col);
+          const hit = legal.find((m) => m.row === row && m.col === col);
+          if (hit) {
+            applyMove(forcedJumpFrom.row, forcedJumpFrom.col, row, col);
+            render();
+          }
+          return;
+        }
+
+        if (selected) {
+          const legal = getLegalMoves(selected.row, selected.col);
+          const hit = legal.find((m) => m.row === row && m.col === col);
+          if (hit) {
+            applyMove(selected.row, selected.col, row, col);
+            render();
+            return;
+          }
+          if (selected.row === row && selected.col === col) {
+            selected = null;
+            render();
+            return;
+          }
+        }
+
+        const piece = board[row][col];
+        if (piece && piece.color === currentPlayer) {
+          if (pieceHasLegalMoves(row, col)) {
+            selected = { row, col };
+            messageEl.textContent = "";
+            messageEl.className = "message";
+          } else if (playerHasAnyJump(currentPlayer)) {
+            selected = null;
+            messageEl.textContent = "A strike is required.";
+            messageEl.className = "message alert";
+          } else {
+            selected = null;
+            messageEl.textContent = "";
+            messageEl.className = "message";
+          }
+          render();
+          return;
+        }
+
+        selected = null;
+        render();
+      }
+
+      function renderRacks() {
+        rackDarkEl.innerHTML = "";
+        rackLightEl.innerHTML = "";
+        for (let i = 0; i < darkCaptured; i++) {
+          const m = document.createElement("div");
+          m.className = "mini-piece dark";
+          rackDarkEl.appendChild(m);
+        }
+        for (let i = 0; i < lightCaptured; i++) {
+          const m = document.createElement("div");
+          m.className = "mini-piece light";
+          rackLightEl.appendChild(m);
+        }
+      }
+
+      function renderTurn() {
+        const darkActive = !gameOver && currentPlayer === DARK;
+        const lightActive = !gameOver && currentPlayer === LIGHT;
+        turnDarkEl.classList.toggle("active", darkActive);
+        turnLightEl.classList.toggle("active", lightActive);
+        subDarkEl.textContent = gameOver
+          ? winner === DARK
+            ? "Victor"
+            : "Fallen"
+          : darkActive
+            ? "Your move"
+            : "Waiting";
+        subLightEl.textContent = gameOver
+          ? winner === LIGHT
+            ? "Victor"
+            : "Fallen"
+          : lightActive
+            ? "Your move"
+            : "Waiting";
+      }
+
+      function render() {
+        boardEl.innerHTML = "";
+
+        const legalTargets = new Set();
+        if (selected) {
+          for (const m of getLegalMoves(selected.row, selected.col)) {
+            legalTargets.add(m.row + "," + m.col);
+          }
+        }
+
+        for (let row = 0; row < SIZE; row++) {
+          for (let col = 0; col < SIZE; col++) {
+            const sq = document.createElement("div");
+            sq.className = "square " + (isDarkSquare(row, col) ? "dark" : "light");
+            sq.dataset.row = String(row);
+            sq.dataset.col = String(col);
+            sq.setAttribute("role", "gridcell");
+
+            if (selected && selected.row === row && selected.col === col) {
+              sq.classList.add("selected");
+            }
+
+            if (lastMove) {
+              if (lastMove.from.row === row && lastMove.from.col === col) {
+                sq.classList.add("last-from");
+              }
+              if (lastMove.to.row === row && lastMove.to.col === col) {
+                sq.classList.add("last-to");
+              }
+            }
+
+            if (
+              captureFlash &&
+              captureFlash.row === row &&
+              captureFlash.col === col
+            ) {
+              sq.classList.add("captured-flash");
+            }
+
+            const key = row + "," + col;
+            if (legalTargets.has(key)) {
+              sq.classList.add("valid-move");
+              const diamond = document.createElement("span");
+              diamond.className = "hint-diamond";
+              sq.appendChild(diamond);
+            }
+
+            const piece = board[row][col];
+            if (piece) {
+              sq.classList.add("has-piece");
+              const el = document.createElement("div");
+              const movable =
+                !gameOver &&
+                piece.color === currentPlayer &&
+                (!forcedJumpFrom ||
+                  (forcedJumpFrom.row === row && forcedJumpFrom.col === col)) &&
+                pieceHasLegalMoves(row, col);
+              el.className =
+                "piece " +
+                piece.color +
+                (piece.king ? " king" : "") +
+                (movable ? " movable" : "");
+              if (
+                promotedAt &&
+                promotedAt.row === row &&
+                promotedAt.col === col
+              ) {
+                el.classList.add("just-promoted");
+              }
+              el.setAttribute(
+                "aria-label",
+                (piece.king ? "Crowned " : "") + NAMES[piece.color]
+              );
+              const ring = document.createElement("span");
+              ring.className = "ring";
+              el.appendChild(ring);
+              if (piece.king) {
+                const crown = document.createElement("span");
+                crown.className = "crown";
+                crown.textContent = "◆";
+                el.appendChild(crown);
+              }
+              sq.appendChild(el);
+            }
+
+            sq.addEventListener("click", () => handleSquareClick(row, col));
+            boardEl.appendChild(sq);
+          }
+        }
+
+        renderRacks();
+        renderTurn();
+
+        if (gameOver) {
+          winTitle.textContent = NAMES[winner] + " prevails";
+          winSub.textContent = "The board is yours";
+          winOverlay.classList.add("show");
+          messageEl.textContent = "";
+          messageEl.className = "message";
+        } else {
+          winOverlay.classList.remove("show");
+        }
+      }
+
+      newGameBtn.addEventListener("click", resetGame);
+      winOverlay.addEventListener("click", resetGame);
+      resetGame();
+    })();
+  </script>
+</body>
+</html>
