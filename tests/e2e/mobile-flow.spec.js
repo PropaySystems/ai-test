@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 test("guest completes tutorial and opens a mobile game board", async ({
@@ -19,6 +20,11 @@ test("guest completes tutorial and opens a mobile game board", async ({
   await expect(page.getByRole("gridcell")).toHaveCount(64);
   await expect(page.getByText("Easy computer")).toBeVisible();
   await expect(page.getByText("Untimed")).toBeVisible();
+
+  const accessibility = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa"])
+    .analyze();
+  expect(accessibility.violations).toEqual([]);
 });
 
 test("player can register and reach the dashboard", async ({ page }) => {

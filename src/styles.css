@@ -30,6 +30,10 @@ select {
   overflow: hidden;
 }
 
+.board-row {
+  display: contents;
+}
+
 .board-square {
   position: relative;
   display: grid;

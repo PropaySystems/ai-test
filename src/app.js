@@ -317,37 +317,45 @@ function boardMarkup(gameState, interactive = true) {
   // Rotate indexes so the human side always advances toward the screen top.
   if (gameState.humanPlayer === "orange") indexes.reverse();
 
-  return `
-    <div class="game-board mx-auto" role="grid" aria-label="Edge Kings board">
-      ${indexes
-        .map((index) => {
-          const row = Math.floor(index / 8);
-          const column = index % 8;
-          const dark = (row + column) % 2 === 1;
-          const piece = gameState.board[index];
-          const selected = state.selected === index;
-          const legal = legalDestinations.has(index);
-          const canMove = movable.has(index);
-          const classes = [
-            "board-square",
-            dark ? "board-square--dark" : "board-square--light",
-            selected ? "board-square--selected" : "",
-            legal ? "board-square--legal" : "",
-            canMove ? "board-square--movable" : "",
-          ].join(" ");
-          const label = piece
-            ? `${piece.player} ${piece.king ? "King" : "piece"} on row ${row + 1}, column ${column + 1}`
-            : `Empty ${dark ? "playable" : "light"} square, row ${row + 1}, column ${column + 1}`;
+  const cells = indexes.map((index) => {
+    const row = Math.floor(index / 8);
+    const column = index % 8;
+    const dark = (row + column) % 2 === 1;
+    const piece = gameState.board[index];
+    const selected = state.selected === index;
+    const legal = legalDestinations.has(index);
+    const canMove = movable.has(index);
+    const classes = [
+      "board-square",
+      dark ? "board-square--dark" : "board-square--light",
+      selected ? "board-square--selected" : "",
+      legal ? "board-square--legal" : "",
+      canMove ? "board-square--movable" : "",
+    ].join(" ");
+    const label = piece
+      ? `${piece.player} ${piece.king ? "King" : "piece"} on row ${row + 1}, column ${column + 1}`
+      : `Empty ${dark ? "playable" : "light"} square, row ${row + 1}, column ${column + 1}`;
 
-          return `<button class="${classes}" data-square="${index}" ${!interactive || (!piece && !legal) ? "" : ""} aria-label="${label}" role="gridcell">
+    return `<button class="${classes}" data-square="${index}" aria-label="${label}" role="gridcell">
             ${
               piece
                 ? `<span draggable="${interactive}" data-piece="${index}" class="piece piece--${piece.player}" aria-hidden="true">${piece.king ? "♛" : piece.player === "blue" ? "●" : "◆"}</span>`
                 : ""
             }
           </button>`;
-        })
-        .join("")}
+  });
+
+  const rows = Array.from(
+    { length: 8 },
+    (_, row) =>
+      `<div class="board-row" role="row" aria-rowindex="${row + 1}">${cells
+        .slice(row * 8, row * 8 + 8)
+        .join("")}</div>`,
+  ).join("");
+
+  return `
+    <div class="game-board mx-auto" role="grid" aria-label="Edge Kings board" aria-rowcount="8" aria-colcount="8">
+      ${rows}
     </div>
   `;
 }
