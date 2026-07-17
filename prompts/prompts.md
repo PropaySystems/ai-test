@@ -116,3 +116,16 @@ Multi-jumps are required if the same piece can continue jumping after a landing.
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:30
+
+**User prompt:**
+
+Add logic to prevent normal pieces(will add special pieces next) from jumping backwards.
+The "a jump is required" rule should not check for backwards jumps
+
+**Images or references:**
+
+None provided

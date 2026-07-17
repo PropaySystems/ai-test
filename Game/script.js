@@ -68,11 +68,10 @@ function getJumpOptions(cell) {
   }
 
   const { row, col } = getCoordinates(cell);
+  const forwardDirection = piece.dataset.color === "black" ? 1 : -1;
   const directions = [
-    [-1, -1],
-    [-1, 1],
-    [1, -1],
-    [1, 1],
+    [forwardDirection, -1],
+    [forwardDirection, 1],
   ];
 
   return directions.flatMap(([rowDirection, colDirection]) => {
