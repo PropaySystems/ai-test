@@ -170,3 +170,15 @@ Note: When you win, there should be confetti
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:48
+
+**User prompt:**
+
+Another improvement, If a player has no valid moves available they lose the game and the oponent wins
+
+**Images or references:**
+
+None provided

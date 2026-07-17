@@ -123,6 +123,28 @@ function getJumpingCells() {
   });
 }
 
+function hasNormalMove(cell) {
+  const piece = cell.querySelector(".piece");
+  const { row, col } = getCoordinates(cell);
+
+  return getMovementDirections(piece).some(
+    ([rowDirection, colDirection]) => {
+      const destination = getCell(row + rowDirection, col + colDirection);
+      return destination && !destination.querySelector(".piece");
+    },
+  );
+}
+
+function hasAnyLegalMove(player) {
+  const playerCells = [...board.querySelectorAll(".cell")].filter(
+    (cell) => cell.querySelector(".piece")?.dataset.color === player,
+  );
+
+  return playerCells.some(
+    (cell) => getJumpOptions(cell).length > 0 || hasNormalMove(cell),
+  );
+}
+
 function selectCell(cell) {
   selectedCell?.classList.remove("cell--selected");
   selectedCell = cell;
@@ -177,6 +199,18 @@ function launchConfetti() {
   window.setTimeout(() => confetti.remove(), 5000);
 }
 
+function declareWinner(winnerColor, reason = "") {
+  const winner = winnerColor[0].toUpperCase() + winnerColor.slice(1);
+  selectedCell?.classList.remove("cell--selected");
+  selectedCell = null;
+  mustContinueJump = false;
+  gameOver = true;
+  status.textContent = reason
+    ? `${winner} wins! ${reason}`
+    : `${winner} wins!`;
+  launchConfetti();
+}
+
 function checkForWinner() {
   const opponent = currentPlayer === "black" ? "white" : "black";
   const opponentPieces = board.querySelectorAll(`.piece--${opponent}`);
@@ -185,13 +219,7 @@ function checkForWinner() {
     return false;
   }
 
-  const winner = currentPlayer[0].toUpperCase() + currentPlayer.slice(1);
-  selectedCell?.classList.remove("cell--selected");
-  selectedCell = null;
-  mustContinueJump = false;
-  gameOver = true;
-  status.textContent = `${winner} wins!`;
-  launchConfetti();
+  declareWinner(currentPlayer);
   return true;
 }
 
@@ -200,6 +228,15 @@ function finishTurn() {
   selectedCell = null;
   mustContinueJump = false;
   currentPlayer = currentPlayer === "black" ? "white" : "black";
+
+  if (!hasAnyLegalMove(currentPlayer)) {
+    const winner = currentPlayer === "black" ? "white" : "black";
+    const blockedPlayer =
+      currentPlayer[0].toUpperCase() + currentPlayer.slice(1);
+    declareWinner(winner, `${blockedPlayer} has no valid moves.`);
+    return;
+  }
+
   updateStatus(getJumpingCells().length ? "a jump is required" : "");
 }
 
