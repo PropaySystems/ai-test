@@ -1,0 +1,50 @@
+:root {
+  color: #1f2937;
+  font-family: system-ui, sans-serif;
+  background: #f3f4f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+}
+
+.game {
+  width: min(90vw, 32rem);
+  text-align: center;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  aspect-ratio: 1;
+  margin: 1.5rem 0;
+  border: 0.25rem solid #1f2937;
+  background: #ffffff;
+}
+
+.cell {
+  display: grid;
+  place-items: center;
+  border: 1px solid #9ca3af;
+  font-size: clamp(2rem, 12vw, 4rem);
+}
+
+button {
+  padding: 0.75rem 1.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  background: #2563eb;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}

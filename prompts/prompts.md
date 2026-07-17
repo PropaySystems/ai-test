@@ -12,6 +12,20 @@ None provided
 
 ---
 
+## Prompt — 2026-07-17 10:15
+
+**User prompt:**
+
+I want to create a board game using normal HTML, CSS and JS
+
+Initialise the necessary files for me in @Game 
+
+**Images or references:**
+
+None provided
+
+---
+
 ## Prompt — 2026-07-17 09:08
 
 **User prompt:**
