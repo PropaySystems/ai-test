@@ -1,0 +1,9 @@
+.cursor/
+coverage/
+data/
+dist/
+node_modules/
+playwright-report/
+prompts/
+test-results/
+test-rules/

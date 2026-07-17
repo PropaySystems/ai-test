@@ -1,116 +1,75 @@
-# AI-test
+# Edge Kings
 
-Instructions for candidates completing this exercise.
+Edge Kings is a mobile-first strategy game based on draughts. Play a quick match against Easy, Medium, or Hard computer opponents, create a profile, save one active game, and review recent replays and statistics.
 
-## Setup
+Read the complete [game rules](docs/game-rules.md) and [playtest scenarios](docs/playtest-scenarios.md).
 
-### 1. Fork the repository
+## Technology
 
-You do not have write access to the main repository, so you need to work from your own fork.
+- Semantic HTML5 and vanilla JavaScript ES modules
+- Tailwind CSS and Vite
+- Node.js and Express
+- SQLite with Knex migrations
+- Secure cookie sessions and Argon2id password hashing
+- Vitest, Supertest, and Playwright
 
-1. Open [https://github.com/PropaySystems/ai-test](https://github.com/PropaySystems/ai-test)
-2. Click **Fork** in the top-right corner
-3. Choose your GitHub account as the destination
+## Local setup
 
-### 2. Clone your fork
+Requirements:
 
-Clone the repository from **your fork**, not the main repo:
-
-```bash
-git clone https://github.com/YOUR-GITHUB-USERNAME/ai-test.git
-cd ai-test
-```
-
-Replace `YOUR-GITHUB-USERNAME` with your actual GitHub username.
-
-Optionally, add the main repository as `upstream` so you can pull future updates:
+- Node.js 20 or newer
+- npm
 
 ```bash
-git remote add upstream https://github.com/PropaySystems/ai-test.git
+cp .env.example .env
+npm install
+npm run db:migrate
+npm run dev
 ```
 
-Confirm your remotes look correct:
+Open [http://localhost:5178](http://localhost:5178). The API runs on [http://localhost:3000](http://localhost:3000).
+
+The development email adapter prints verification and password-reset preview links in the API terminal. No external email account is needed.
+
+## Commands
 
 ```bash
-git remote -v
+npm run dev           # Start Vite and Express
+npm run db:migrate    # Apply SQLite migrations
+npm run lint          # Check JavaScript
+npm run format:check  # Check formatting
+npm test              # Run unit and API integration tests
+npm run test:coverage # Run tests with coverage
+npm run test:e2e      # Run mobile browser journeys
+npm run build         # Create the production client build
+npm start             # Start the production API/static server
 ```
 
-You should see `origin` pointing to your fork and, if added, `upstream` pointing to `PropaySystems/ai-test`.
-
-### 3. Create a feature branch
-
-Create a new feature branch named after yourself:
+Install Playwright's Chromium browser once before the first end-to-end run:
 
 ```bash
-git checkout -b feature/your-name
+npx playwright install chromium
 ```
 
-Replace `your-name` with your actual name (e.g. `feature/jane-doe`).
+## Architecture
 
-### 4. Follow the instructions you receive
+- `src/` contains browser views, board interaction, the API client, and the AI Web Worker.
+- `server/` contains Express routes, account security, sessions, email previews, and persistence.
+- `shared/` contains the deterministic game engine, computer search, and validation schemas.
+- `migrations/` owns database changes.
+- `tests/` contains rules, AI, API, and mobile browser coverage.
 
-Listen to and follow the instructions provided to you during the exercise.
+The game engine is UI-independent and serializable. This keeps rule tests deterministic and prepares the project for a later server-authoritative online mode.
 
-### 5. Install the test rule in your LLM or IDE
+## Security notes
 
-Copy the rule file from the **test rules** section of this repo:
+- Passwords are hashed with Argon2id.
+- Authentication uses server-side sessions in HTTP-only, same-site cookies.
+- State-changing requests require a session-bound CSRF token.
+- Authentication and recovery endpoints are rate limited.
+- Email addresses remain private.
+- Set a strong `SESSION_SECRET` and HTTPS before deployment.
 
-```
-test-rules/commit-user-prompts.mdc
-```
+## Candidate workflow
 
-Move a copy into whatever LLM or IDE you use, so it is **always applied** on every interaction. Where you put it depends on your tool:
-
-| Tool | Typical location |
-|------|------------------|
-| **Cursor** | `.cursor/rules/commit-user-prompts.mdc` |
-| **Other IDEs / agents** | Use that tool’s equivalent “always-on” rules or instructions folder |
-
-The rule tells the AI to log every user prompt to `prompts/prompts.md` and commit the log automatically.
-
-### 6. Test that the rule is working
-
-After the rule is in place, send any prompt to your LLM or instruction AI (for example: “Say hello”).
-
-**Expected result:** the AI creates a `prompts/` folder containing a `prompts.md` file with your prompt logged inside, and commits the change to git.
-
-If that folder and file appear after your test prompt, the rule is installed correctly.
-
-### 7. Push your branch to your fork
-
-When you have completed all instructions, push your feature branch to **your fork**:
-
-```bash
-git push -u origin feature/your-name
-```
-
-### 8. Open a pull request into `master`
-
-Create a pull request from your forked branch into the main repository.
-
-**Option A — GitHub website (recommended)**
-
-1. Go to your fork on GitHub: `https://github.com/YOUR-GITHUB-USERNAME/ai-test`
-2. GitHub will usually show a banner: **Compare & pull request**. Click it.
-   - If you do not see the banner, open the **Pull requests** tab and click **New pull request**
-3. Set:
-   - **base repository:** `PropaySystems/ai-test`
-   - **base branch:** `master`
-   - **head repository:** `YOUR-GITHUB-USERNAME/ai-test`
-   - **compare branch:** `feature/your-name`
-4. Add a title and description, then click **Create pull request**
-
-**Option B — GitHub CLI**
-
-If you use the `gh` CLI, run this from your local repo:
-
-```bash
-gh pr create \
-  --repo PropaySystems/ai-test \
-  --base master \
-  --head YOUR-GITHUB-USERNAME:feature/your-name \
-  --title "Complete candidate exercise" \
-  --body "Completed all setup and exercise instructions."
-```
-
-Replace `YOUR-GITHUB-USERNAME` and `feature/your-name` with your actual values.
+Work on a feature branch in your fork. Keep commits focused, do not push until local checks pass, then open a pull request into `PropaySystems/ai-test:master`.
