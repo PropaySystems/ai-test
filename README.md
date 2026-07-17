@@ -4,26 +4,42 @@ Instructions for candidates completing this exercise.
 
 ## Setup
 
-### 1. Make sure Git is initialized
+### 1. Fork the repository
 
-Confirm that this directory is a Git repository and that you can commit and push changes:
+You do not have write access to the main repository, so you need to work from your own fork.
+
+1. Open [https://github.com/PropaySystems/ai-test](https://github.com/PropaySystems/ai-test)
+2. Click **Fork** in the top-right corner
+3. Choose your GitHub account as the destination
+
+### 2. Clone your fork
+
+Clone the repository from **your fork**, not the main repo:
 
 ```bash
-git status
+git clone https://github.com/YOUR-GITHUB-USERNAME/ai-test.git
+cd ai-test
+```
+
+Replace `YOUR-GITHUB-USERNAME` with your actual GitHub username.
+
+Optionally, add the main repository as `upstream` so you can pull future updates:
+
+```bash
+git remote add upstream https://github.com/PropaySystems/ai-test.git
+```
+
+Confirm your remotes look correct:
+
+```bash
 git remote -v
 ```
 
-If Git has not been initialized yet, run:
+You should see `origin` pointing to your fork and, if added, `upstream` pointing to `PropaySystems/ai-test`.
 
-```bash
-git init
-```
+### 3. Create a feature branch
 
-Do not push anything until you are fully complete with the instructions.
-
-### 2. Create a feature branch
-
-Create a new branch named after yourself:
+Create a new feature branch named after yourself:
 
 ```bash
 git checkout -b feature/your-name
@@ -31,11 +47,11 @@ git checkout -b feature/your-name
 
 Replace `your-name` with your actual name (e.g. `feature/jane-doe`).
 
-### 3. Follow the instructions you receive
+### 4. Follow the instructions you receive
 
 Listen to and follow the instructions provided to you during the exercise.
 
-### 4. Install the test rule in your LLM or IDE
+### 5. Install the test rule in your LLM or IDE
 
 Copy the rule file from the **test rules** section of this repo:
 
@@ -52,7 +68,7 @@ Move a copy into whatever LLM or IDE you use, so it is **always applied** on eve
 
 The rule tells the AI to log every user prompt to `prompts/prompts.md` and commit the log automatically.
 
-### 5. Test that the rule is working
+### 6. Test that the rule is working
 
 After the rule is in place, send any prompt to your LLM or instruction AI (for example: “Say hello”).
 
@@ -60,12 +76,41 @@ After the rule is in place, send any prompt to your LLM or instruction AI (for e
 
 If that folder and file appear after your test prompt, the rule is installed correctly.
 
-### 6. Create a pull request into `master`
+### 7. Push your branch to your fork
 
-After you have completed all instructions, open a pull request from your feature branch into `master`:
+When you have completed all instructions, push your feature branch to **your fork**:
 
 ```bash
 git push -u origin feature/your-name
-gh pr create --base master --title "Complete candidate exercise" --body "Completed all setup and exercise instructions."
 ```
 
+### 8. Open a pull request into `master`
+
+Create a pull request from your forked branch into the main repository.
+
+**Option A — GitHub website (recommended)**
+
+1. Go to your fork on GitHub: `https://github.com/YOUR-GITHUB-USERNAME/ai-test`
+2. GitHub will usually show a banner: **Compare & pull request**. Click it.
+   - If you do not see the banner, open the **Pull requests** tab and click **New pull request**
+3. Set:
+   - **base repository:** `PropaySystems/ai-test`
+   - **base branch:** `master`
+   - **head repository:** `YOUR-GITHUB-USERNAME/ai-test`
+   - **compare branch:** `feature/your-name`
+4. Add a title and description, then click **Create pull request**
+
+**Option B — GitHub CLI**
+
+If you use the `gh` CLI, run this from your local repo:
+
+```bash
+gh pr create \
+  --repo PropaySystems/ai-test \
+  --base master \
+  --head YOUR-GITHUB-USERNAME:feature/your-name \
+  --title "Complete candidate exercise" \
+  --body "Completed all setup and exercise instructions."
+```
+
+Replace `YOUR-GITHUB-USERNAME` and `feature/your-name` with your actual values.
