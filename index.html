@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Checkers — Local Two Player</title>
+    <title>Checkers — Local Game Room</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/styles.css" />
@@ -15,63 +15,179 @@
   <body>
     <div class="app">
       <header class="header">
-        <p class="eyebrow">Local two-player</p>
+        <p class="eyebrow">Tabletop room</p>
         <h1>Checkers</h1>
         <p class="lede">
-          Mandatory captures, multi-jumps, and kings — play both sides on one
-          board.
+          Create players, drag pieces, and ask for a hint when the board gets
+          sharp.
         </p>
       </header>
 
       <main class="layout">
-        <section class="panel panel--status" aria-live="polite">
+        <section class="panel panel--players" aria-label="Players">
+          <article class="player-card" id="card-black" data-side="black">
+            <div class="player-card__avatar" id="avatar-black" aria-hidden="true">
+              P1
+            </div>
+            <div class="player-card__meta">
+              <p class="player-card__side">Bottom · Black side</p>
+              <h2 id="name-black">Player One</h2>
+              <p class="player-card__count">
+                <span id="count-black">12</span> pieces
+              </p>
+            </div>
+            <span class="player-card__turn" hidden>To move</span>
+          </article>
+
+          <article class="player-card" id="card-red" data-side="red">
+            <div class="player-card__avatar" id="avatar-red" aria-hidden="true">
+              P2
+            </div>
+            <div class="player-card__meta">
+              <p class="player-card__side">Top · Red side</p>
+              <h2 id="name-red">Player Two</h2>
+              <p class="player-card__count">
+                <span id="count-red">12</span> pieces
+              </p>
+            </div>
+            <span class="player-card__turn" hidden>To move</span>
+          </article>
+
           <div class="turn-badge" id="turn-badge" data-player="black">
             <span class="turn-badge__swatch" aria-hidden="true"></span>
             <span id="status-text">Black to move</span>
           </div>
 
-          <dl class="scoreboard">
-            <div>
-              <dt>Black</dt>
-              <dd id="count-black">12</dd>
-            </div>
-            <div>
-              <dt>Red</dt>
-              <dd id="count-red">12</dd>
-            </div>
-          </dl>
-
-          <button type="button" class="btn" id="reset-btn">New game</button>
+          <div class="controls">
+            <button type="button" class="btn btn--accent" id="hint-btn">
+              Suggest move
+            </button>
+            <button type="button" class="btn btn--ghost" id="settings-btn">
+              Players &amp; options
+            </button>
+            <button type="button" class="btn" id="reset-btn">New game</button>
+          </div>
         </section>
 
         <section class="board-stage" aria-label="Checkers board">
-          <div class="player-label player-label--top">Red</div>
+          <div class="player-label player-label--top" id="label-red">
+            Player Two
+          </div>
           <div
             id="board"
             class="board"
             role="grid"
             aria-label="8 by 8 checkers board"
           ></div>
-          <div class="player-label player-label--bottom">Black</div>
+          <div class="player-label player-label--bottom" id="label-black">
+            Player One
+          </div>
+          <p class="board-hint" id="hint-caption" hidden></p>
         </section>
 
         <aside class="panel panel--rules">
-          <h2>Rules reminder</h2>
+          <h2>How to play</h2>
           <ul>
-            <li>Only dark squares are playable.</li>
-            <li>Men move diagonally forward one square.</li>
+            <li>Drag a piece or click, then drop/click a highlighted square.</li>
             <li>Captures are mandatory — if you can jump, you must.</li>
-            <li>Continue jumping with the same piece when another jump opens.</li>
-            <li>Reach the far row to become a king (moves both ways).</li>
-            <li>Win by capturing all pieces or leaving no legal moves.</li>
+            <li>Keep jumping with the same piece when another jump opens.</li>
+            <li>Reach the far row to crown a king.</li>
+            <li>Use <strong>Suggest move</strong> for one recommended play.</li>
           </ul>
           <p class="hint">
-            Tip: click a piece, then a highlighted square. Keyboard users can
-            Tab to squares and press Enter or Space.
+            Keyboard still works: Tab to a square, Enter or Space to act.
           </p>
         </aside>
       </main>
     </div>
+
+    <dialog class="setup-dialog" id="setup-dialog" aria-labelledby="setup-title">
+      <form method="dialog" class="setup-form" id="setup-form">
+        <header class="setup-form__header">
+          <p class="eyebrow">Match setup</p>
+          <h2 id="setup-title">Create your players</h2>
+          <p>Names, piece colors, and who opens the game.</p>
+        </header>
+
+        <div class="setup-grid">
+          <fieldset class="setup-field">
+            <legend>Bottom player (Black side)</legend>
+            <label>
+              Name
+              <input
+                id="input-black-name"
+                name="blackName"
+                type="text"
+                maxlength="24"
+                autocomplete="nickname"
+                required
+              />
+            </label>
+            <label>
+              Piece color
+              <select id="input-black-palette" name="blackPalette"></select>
+            </label>
+          </fieldset>
+
+          <fieldset class="setup-field">
+            <legend>Top player (Red side)</legend>
+            <label>
+              Name
+              <input
+                id="input-red-name"
+                name="redName"
+                type="text"
+                maxlength="24"
+                autocomplete="nickname"
+                required
+              />
+            </label>
+            <label>
+              Piece color
+              <select id="input-red-palette" name="redPalette"></select>
+            </label>
+          </fieldset>
+        </div>
+
+        <fieldset class="setup-field setup-field--full">
+          <legend>First to move</legend>
+          <div class="choice-row">
+            <label class="choice">
+              <input
+                type="radio"
+                name="firstPlayer"
+                id="first-black"
+                value="black"
+                checked
+              />
+              <span>Bottom player</span>
+            </label>
+            <label class="choice">
+              <input
+                type="radio"
+                name="firstPlayer"
+                id="first-red"
+                value="red"
+              />
+              <span>Top player</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <p class="setup-error" id="setup-error" hidden></p>
+
+        <div class="setup-actions">
+          <button type="button" class="btn btn--ghost" id="setup-cancel" value="cancel">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn--accent" id="setup-save" value="save">
+            Start match
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="drag-ghost" id="drag-ghost" hidden aria-hidden="true"></div>
 
     <script type="module" src="js/main.js"></script>
   </body>

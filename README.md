@@ -1,6 +1,6 @@
 # Checkers — Modular JavaScript Game
 
-Two-player local checkers (draughts) built with vanilla HTML, CSS, and reusable ES modules.
+Local two-player checkers with player setup, on-demand move hints, and drag-and-drop, built with vanilla HTML, CSS, and reusable ES modules.
 
 ## Play
 
@@ -24,24 +24,32 @@ python3 -m http.server 4173
 npm test
 ```
 
-Uses Node’s built-in test runner against the pure rules engine in `js/checkers.js`.
+Uses Node’s built-in test runner against the pure rules engine and player-settings helpers.
+
+## Features
+
+- **Player setup** — name both players, pick piece color palettes, choose who moves first; settings persist in `localStorage`
+- **Suggest move** — highlights one recommended legal play without making it
+- **Drag and drop** — pointer-based mouse/touch dragging; click and keyboard still work
+- **Full rules** — mandatory captures, multi-jumps, kings (including continuing after crowning), and both win conditions
 
 ## Module architecture
 
 | File | Responsibility |
 |------|----------------|
 | [`js/constants.js`](js/constants.js) | Board size, players, piece types, dark-square helpers, move deltas |
-| [`js/checkers.js`](js/checkers.js) | Pure, reusable game state and rules (no DOM) |
-| [`js/ui.js`](js/ui.js) | Rendering, click/keyboard interaction, status display |
+| [`js/checkers.js`](js/checkers.js) | Pure, reusable game state and rules (including `suggestMove`) |
+| [`js/players.js`](js/players.js) | Player names, palettes, validation, and local persistence |
+| [`js/ui.js`](js/ui.js) | Rendering, setup dialog, hints, drag/drop, status display |
 | [`js/main.js`](js/main.js) | Application bootstrap |
-| [`css/styles.css`](css/styles.css) | Board and chrome styling |
-| [`tests/checkers.test.js`](tests/checkers.test.js) | Rules coverage |
+| [`css/styles.css`](css/styles.css) | Game-room styling and motion |
+| [`tests/checkers.test.js`](tests/checkers.test.js) | Rules and settings coverage |
 
-Game rules live only in `checkers.js`, so move generation, captures, crowning, and win checks can be reused from tests, a future AI opponent, or another UI.
+Game rules live only in `checkers.js`, so move generation, captures, crowning, hints, and win checks can be reused from tests or another UI.
 
 ## Gameplay rules
 
-1. **Setup** — 8×8 board; only the 32 dark squares are used. Each side starts with 12 pieces on the three nearest rows of dark squares. Black moves first.
+1. **Setup** — 8×8 board; only the 32 dark squares are used. Each side starts with 12 pieces on the three nearest rows of dark squares.
 2. **Moves** — Men move diagonally forward one empty dark square.
 3. **Captures** — Jump diagonally over an adjacent enemy into the empty square beyond. Captures are mandatory. Multi-jumps with the same piece are required when available.
 4. **Kings** — Reaching the opponent’s back row crowns the piece. Kings move and capture diagonally in both directions. If a piece crowns mid-chain and another jump is available, it continues jumping as a king.
@@ -49,9 +57,11 @@ Game rules live only in `checkers.js`, so move generation, captures, crowning, a
 
 ## Controls
 
-- Click a piece, then a highlighted destination.
+- Drag a piece onto a highlighted square, or click to select then click a destination.
+- **Suggest move** highlights a recommended origin and landing square.
+- **Players & options** opens the setup dialog (names, colors, first player).
+- **New game** resets the board using the saved first-player preference.
 - Keyboard: Tab to a square, Enter or Space to select / move.
-- **New game** resets the board.
 
 ---
 

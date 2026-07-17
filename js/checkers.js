@@ -300,14 +300,91 @@ export function getWinner(board, playerToMove) {
   return null;
 }
 
-export function createInitialState() {
+/**
+ * @param {{ firstPlayer?: string }} [options]
+ */
+export function createInitialState(options = {}) {
+  const firstPlayer =
+    options.firstPlayer === PLAYERS.RED || options.firstPlayer === PLAYERS.BLACK
+      ? options.firstPlayer
+      : PLAYERS.BLACK;
+
   return {
     board: createInitialBoard(),
-    currentPlayer: PLAYERS.BLACK,
+    currentPlayer: firstPlayer,
     selected: null,
     forcedPiece: null,
     winner: null,
-    status: 'Black to move',
+    status: `${capitalize(firstPlayer)} to move`,
+  };
+}
+
+/**
+ * Rank legal moves for the hint system.
+ * Higher score = stronger suggestion. Captures already dominate via getLegalMoves.
+ */
+export function scoreMove(board, move) {
+  let score = 0;
+  const piece = getPiece(board, move.from);
+  if (!piece) return score;
+
+  if (move.captured) score += 100;
+
+  const landing = move.to;
+  if (shouldCrown(piece, landing.row)) score += 40;
+
+  // Prefer advancing men toward the king row.
+  if (piece.type === PIECE_TYPES.MAN) {
+    const forward = FORWARD_DELTAS[piece.player];
+    score += (landing.row - move.from.row) * forward * 2;
+  } else {
+    score += 5;
+  }
+
+  // Prefer central landings slightly.
+  const centerBias = 3.5 - Math.abs(landing.col - 3.5);
+  score += centerBias;
+
+  // Peek one ply for continued captures after this jump.
+  if (move.captured) {
+    const { continuedCaptures } = applyMove(board, move);
+    score += continuedCaptures.length * 25;
+  }
+
+  return score;
+}
+
+/**
+ * Suggest a single legal move for the current turn.
+ * Returns null when the game is over or no moves exist.
+ */
+export function suggestMove(state) {
+  if (!state || state.winner) return null;
+
+  const moves = getLegalMoves(
+    state.board,
+    state.currentPlayer,
+    state.forcedPiece,
+  );
+
+  if (moves.length === 0) return null;
+
+  let best = moves[0];
+  let bestScore = scoreMove(state.board, best);
+
+  for (let i = 1; i < moves.length; i += 1) {
+    const candidate = moves[i];
+    const score = scoreMove(state.board, candidate);
+    if (score > bestScore) {
+      best = candidate;
+      bestScore = score;
+    }
+  }
+
+  return {
+    from: { ...best.from },
+    to: { ...best.to },
+    captured: best.captured ? { ...best.captured } : null,
   };
 }
 
@@ -472,8 +549,11 @@ export function handleSquareAction(state, position) {
   return selectSquare(state, position);
 }
 
-export function resetGame() {
-  return createInitialState();
+/**
+ * @param {{ firstPlayer?: string }} [options]
+ */
+export function resetGame(options = {}) {
+  return createInitialState(options);
 }
 
 export {

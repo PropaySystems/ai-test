@@ -17,8 +17,16 @@ import {
   getWinner,
   handleSquareAction,
   moveSelectedTo,
+  resetGame,
   selectSquare,
+  suggestMove,
 } from '../js/checkers.js';
+import {
+  createDefaultSettings,
+  getInitials,
+  normalizeSettings,
+  saveSettings,
+} from '../js/players.js';
 
 function place(board, row, col, player, type = PIECE_TYPES.MAN) {
   board[row][col] = { player, type };
@@ -49,6 +57,15 @@ describe('setup', () => {
     const state = createInitialState();
     assert.equal(state.currentPlayer, PLAYERS.BLACK);
     assert.equal(state.winner, null);
+  });
+
+  it('accepts a configured first player', () => {
+    const state = createInitialState({ firstPlayer: PLAYERS.RED });
+    assert.equal(state.currentPlayer, PLAYERS.RED);
+    assert.match(state.status, /Red to move/i);
+
+    const reset = resetGame({ firstPlayer: PLAYERS.RED });
+    assert.equal(reset.currentPlayer, PLAYERS.RED);
   });
 });
 
@@ -297,5 +314,92 @@ describe('legal move helpers', () => {
 
     const captures = getAllCaptures(board, PLAYERS.BLACK);
     assert.equal(captures.length, 2);
+  });
+});
+
+describe('move suggestions', () => {
+  it('suggests a capture when captures are mandatory', () => {
+    const board = createEmptyBoard();
+    place(board, 5, 0, PLAYERS.BLACK);
+    place(board, 5, 2, PLAYERS.BLACK);
+    place(board, 4, 3, PLAYERS.RED);
+
+    const suggestion = suggestMove({
+      board,
+      currentPlayer: PLAYERS.BLACK,
+      forcedPiece: null,
+      winner: null,
+    });
+
+    assert.ok(suggestion);
+    assert.deepEqual(suggestion.from, { row: 5, col: 2 });
+    assert.deepEqual(suggestion.to, { row: 3, col: 4 });
+    assert.deepEqual(suggestion.captured, { row: 4, col: 3 });
+  });
+
+  it('prefers a crowning capture over a quiet alternative when both are captures', () => {
+    const board = createEmptyBoard();
+    place(board, 2, 1, PLAYERS.BLACK);
+    place(board, 1, 2, PLAYERS.RED);
+    place(board, 2, 5, PLAYERS.BLACK);
+    place(board, 1, 4, PLAYERS.RED);
+
+    const suggestion = suggestMove({
+      board,
+      currentPlayer: PLAYERS.BLACK,
+      forcedPiece: null,
+      winner: null,
+    });
+
+    assert.ok(suggestion);
+    assert.deepEqual(suggestion.from, { row: 2, col: 1 });
+    assert.deepEqual(suggestion.to, { row: 0, col: 3 });
+  });
+
+  it('returns null when the game already has a winner', () => {
+    const state = createInitialState();
+    state.winner = PLAYERS.BLACK;
+    assert.equal(suggestMove(state), null);
+  });
+});
+
+describe('player settings', () => {
+  it('normalizes names, palettes, and first player', () => {
+    const settings = normalizeSettings({
+      players: {
+        black: { name: '  Ada  Lovelace ', palette: 'slate' },
+        red: { name: '', palette: 'not-real' },
+      },
+      firstPlayer: 'red',
+    });
+
+    assert.equal(settings.players.black.name, 'Ada Lovelace');
+    assert.equal(settings.players.black.palette, 'slate');
+    assert.equal(settings.players.red.name, 'Player Two');
+    assert.equal(settings.players.red.palette, 'crimson');
+    assert.equal(settings.firstPlayer, PLAYERS.RED);
+  });
+
+  it('avoids duplicate palettes and persists through a mock store', () => {
+    const memory = new Map();
+    const storage = {
+      getItem: (key) => memory.get(key) ?? null,
+      setItem: (key, value) => memory.set(key, value),
+    };
+
+    const saved = saveSettings(
+      {
+        ...createDefaultSettings(),
+        players: {
+          black: { name: 'North', palette: 'crimson' },
+          red: { name: 'South', palette: 'crimson' },
+        },
+      },
+      storage,
+    );
+
+    assert.notEqual(saved.players.black.palette, saved.players.red.palette);
+    assert.equal(saved.setupCompleted, true);
+    assert.equal(getInitials('North Wind'), 'NW');
   });
 });
