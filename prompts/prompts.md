@@ -11,3 +11,15 @@ Hi. Okay, so I want you to create me a MD file for a task that I'm actually goin
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 13:42
+
+**User prompt:**
+
+Okay. So now, can you please generate a complete self-contained HTML file implementing the two-player board game from the official rules document that I just created that you just created, basically read that MD file one more time so you understand the rules properly, and then structure the code as eight decoupled modules so that I can actually understand the code properly in a way that there's a game state, then move generator, move validator, then game engine, UI rendering, and UI event handlers as well. And constants as well. You can, you can definitely use e as six classes.You can definitely use ES6 classes. Right with JS docs comments on every function explaining the parameters, side effects, returns, and include, please include clean UI with eight into eight board dark slash light pieces with crown symbols, four kings, click-based integrations, and highlighting mandatory captures with multi-jump enforcements, enforcements, right? Also, auto promotion win slash draw detection, status bar showing turn and move history. Plus new game and undo buttons. Keep functions under 30 lines with a meaningful variable name so that everybody who is reading my code or can understand the code easily. And add a top-level architecture comment as well, thanks
+
+**Images or references:**
+
+None provided

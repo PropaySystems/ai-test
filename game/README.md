@@ -8,6 +8,25 @@ Turn-based two-player game on an 8×8 board (32 dark playable squares).
 
 ## Run
 
+### Browser UI (self-contained HTML)
+
+Open the single-file app in a browser:
+
+```bash
+open game/index.html
+```
+
+Or from the project root:
+
+```bash
+python3 -m http.server 8080
+# then visit http://localhost:8080/game/index.html
+```
+
+The HTML app has eight ES6 modules: Constants, BoardUtils, GameState, MoveGenerator, MoveValidator, GameEngine, UIRenderer, UIEventHandlers.
+
+### Python CLI
+
 ```bash
 # Interactive play
 python3 -m game
