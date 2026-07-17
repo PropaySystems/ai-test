@@ -23,6 +23,7 @@ body {
 .board {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
   aspect-ratio: 1;
   margin: 1.5rem 0;
   border: 0.25rem solid #1f2937;
@@ -31,6 +32,8 @@ body {
 .cell {
   display: grid;
   place-items: center;
+  min-width: 0;
+  min-height: 0;
   border: 0;
   border-radius: 0;
   padding: 0;

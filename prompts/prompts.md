@@ -62,3 +62,15 @@ It has to be an 8x8 grid with alternating colours similar to a chess board
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:21
+
+**User prompt:**
+
+The two open rows in the middle are now smaller the the other rows
+
+**Images or references:**
+
+None provided
