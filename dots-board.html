@@ -234,6 +234,55 @@
       line-height: 1.5;
     }
 
+    .rules-panel {
+      width: min(92vw, 520px);
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem 1.5rem;
+      color: var(--text);
+    }
+
+    .rules-panel h2 {
+      font-size: 1.15rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .rules-panel h3 {
+      font-size: 0.95rem;
+      margin: 1rem 0 0.4rem;
+      color: var(--text);
+    }
+
+    .rules-panel ol,
+    .rules-panel ul {
+      padding-left: 1.25rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .rules-panel li + li {
+      margin-top: 0.35rem;
+    }
+
+    .rules-panel .swatch {
+      display: inline-block;
+      width: 0.7em;
+      height: 0.7em;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin: 0 0.15em;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .rules-panel .swatch.p1 { background: var(--p1); }
+    .rules-panel .swatch.p2 { background: var(--p2); }
+
     .hidden { display: none !important; }
 
     .overlay {
@@ -292,11 +341,64 @@
     </div>
   </div>
 
-  <p class="rules">
-    Men move one diagonal step forward on black squares. Kings (gold ring) move diagonally forward or back.
-    To capture, jump over an enemy dot onto the empty black square right behind it — you may chain jumps.
-    Reach the far row to become a king. Win by capturing all enemy dots or leaving them with no moves.
-  </p>
+  <section class="rules-panel" aria-labelledby="rules-heading">
+    <h2 id="rules-heading">How to play</h2>
+
+    <h3>Setup</h3>
+    <ol>
+      <li>The board is an <strong>8×8</strong> grid of alternating <strong>blue</strong> and <strong>black</strong> squares.</li>
+      <li>Play happens on <strong>black squares only</strong>.</li>
+      <li>Each player starts with <strong>12 dots</strong>:
+        <span class="swatch p1" aria-hidden="true"></span> <strong>Player 1 (white)</strong> on the bottom three rows,
+        <span class="swatch p2" aria-hidden="true"></span> <strong>Player 2 (red)</strong> on the top three rows.
+      </li>
+      <li>Before the game begins, choose <strong>who moves first</strong>. Players then take turns.</li>
+    </ol>
+
+    <h3>Goal</h3>
+    <ul>
+      <li>Win by capturing <strong>all</strong> of the opponent’s dots, <strong>or</strong> by leaving them with <strong>no legal moves</strong>.</li>
+    </ul>
+
+    <h3>Turns</h3>
+    <ol>
+      <li>On your turn, click one of your dots, then click a highlighted square to move.</li>
+      <li>Green highlights are normal moves; reddish highlights are capture landings.</li>
+      <li>After you move (or finish a jump chain), it becomes the other player’s turn.</li>
+    </ol>
+
+    <h3>Movement (men)</h3>
+    <ol>
+      <li>Ordinary dots (“men”) move <strong>one step diagonally forward</strong> onto an empty black square.</li>
+      <li><strong>Player 1 (white)</strong> moves toward the top of the board.</li>
+      <li><strong>Player 2 (red)</strong> moves toward the bottom of the board.</li>
+      <li>Men <strong>cannot</strong> move backward.</li>
+    </ol>
+
+    <h3>Capturing</h3>
+    <ol>
+      <li>To eliminate an enemy dot, you must <strong>jump over it</strong>.</li>
+      <li>The square immediately beyond the enemy (diagonal, same direction as the jump) must be an <strong>empty black square</strong>.</li>
+      <li>You land on that empty square; the jumped enemy is removed.</li>
+      <li>You <strong>cannot</strong> capture by simply landing on an occupied square.</li>
+      <li>If another jump is available from where you land, you <strong>must continue jumping</strong> with the same dot (chain captures).</li>
+      <li>If any capture is available for you, you <strong>must capture</strong> — quiet moves are not allowed that turn.</li>
+    </ol>
+
+    <h3>Kings</h3>
+    <ol>
+      <li>When a man reaches the <strong>farthest row</strong> (white → top row, red → bottom row), it becomes a <strong>king</strong> (gold ring and crown).</li>
+      <li>Kings move <strong>one step diagonally in any direction</strong> — forward or backward — onto empty black squares.</li>
+      <li>Kings also capture by jumping in <strong>any diagonal direction</strong>, landing on the empty black square behind the enemy.</li>
+      <li>Only kings may move both ways; ordinary men stay forward-only.</li>
+    </ol>
+
+    <h3>Winning and restarting</h3>
+    <ol>
+      <li>The game ends when one player has no dots left, or cannot make any legal move on their turn.</li>
+      <li>Use <strong>New game</strong> (or <strong>Play again</strong> after a win) to return to the first-player choice and reset the board.</li>
+    </ol>
+  </section>
 
   <script>
     const SIZE = 8;

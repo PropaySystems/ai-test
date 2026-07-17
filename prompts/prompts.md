@@ -65,3 +65,15 @@ in order to eliminate the opposite player's dot I have to skip their dot left a 
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 11:08
+
+**User prompt:**
+
+create a full rules list on how to play the game.
+
+**Images or references:**
+
+None provided
