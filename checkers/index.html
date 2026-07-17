@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkers — Two Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles/board.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="brand">
+          <p class="brand-name">Checkers</p>
+          <p class="brand-tag">Two players · English rules</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" id="toggle-sound" class="btn btn-ghost" aria-pressed="true">
+            Sound: On
+          </button>
+          <button type="button" id="new-game" class="btn btn-primary">New Game</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="board-panel" aria-label="Game board">
+          <div id="board"></div>
+        </section>
+
+        <aside class="side-panel">
+          <div class="panel-block">
+            <h2 class="panel-title">Turn</h2>
+            <p id="turn" class="turn-indicator turn-white">Player A (White)</p>
+            <p id="status" class="status-text" role="status" aria-live="polite"></p>
+          </div>
+
+          <div class="panel-block panel-history">
+            <h2 class="panel-title">Move history</h2>
+            <ol id="history" class="history-list"></ol>
+          </div>
+
+          <div class="panel-block rules-hint">
+            <h2 class="panel-title">Quick rules</h2>
+            <ul>
+              <li>Move diagonally on dark squares only</li>
+              <li>Captures are mandatory when available</li>
+              <li>Multi-jumps must be completed</li>
+              <li>Reach the far row to become a king</li>
+            </ul>
+          </div>
+        </aside>
+      </main>
+    </div>
+    <!-- Plain scripts only — open index.html directly in a browser -->
+    <script src="src/engine/constants.js"></script>
+    <script src="src/utils/coordinates.js"></script>
+    <script src="src/engine/Piece.js"></script>
+    <script src="src/engine/Move.js"></script>
+    <script src="src/engine/Board.js"></script>
+    <script src="src/engine/MoveGenerator.js"></script>
+    <script src="src/engine/MoveValidator.js"></script>
+    <script src="src/engine/Game.js"></script>
+    <script src="src/ui/SoundService.js"></script>
+    <script src="src/ui/BoardView.js"></script>
+    <script src="src/ui/StatusView.js"></script>
+    <script src="src/ui/GameController.js"></script>
+    <script src="src/main.js"></script>
+  </body>
+</html>
