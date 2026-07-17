@@ -182,3 +182,15 @@ Another improvement, If a player has no valid moves available they lose the game
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:52
+
+**User prompt:**
+
+Add a rules button that will show the players the rules
+
+**Images or references:**
+
+None provided

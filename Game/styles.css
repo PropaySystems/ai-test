@@ -12,7 +12,7 @@ body {
   min-height: 100vh;
   margin: 0;
   display: grid;
-  place-items: start center;
+  place-items: center;
   padding: 2rem 0;
 }
 
@@ -91,7 +91,15 @@ body {
   letter-spacing: 0.04em;
 }
 
-#reset-button {
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.actions button,
+.rules__header button {
   padding: 0.75rem 1.25rem;
   border: 0;
   border-radius: 0.5rem;
@@ -100,12 +108,34 @@ body {
   cursor: pointer;
 }
 
-#reset-button:hover {
+.actions button:hover,
+.rules__header button:hover {
   background: #1d4ed8;
 }
 
+#rules-button {
+  background: #475569;
+}
+
+#rules-button:hover {
+  background: #334155;
+}
+
+.rules-dialog {
+  width: min(90vw, 40rem);
+  max-height: min(85vh, 40rem);
+  padding: 0;
+  border: 0;
+  border-radius: 0.75rem;
+  overflow: auto;
+  background: transparent;
+}
+
+.rules-dialog::backdrop {
+  background: rgb(15 23 42 / 55%);
+}
+
 .rules {
-  margin-top: 2rem;
   padding: clamp(1.25rem, 4vw, 2rem);
   border-radius: 0.75rem;
   text-align: left;
@@ -114,9 +144,16 @@ body {
   box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 10%);
 }
 
-.rules h2 {
-  margin-top: 0;
-  text-align: center;
+.rules__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.rules__header h2 {
+  margin: 0;
 }
 
 .rules h3 {

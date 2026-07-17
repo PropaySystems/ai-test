@@ -11,10 +11,20 @@
       <h1>Board Game</h1>
       <p id="status" aria-live="polite">Game ready</p>
       <div id="board" class="board" aria-label="Game board"></div>
-      <button id="reset-button" type="button">Reset game</button>
+      <div class="actions">
+        <button id="rules-button" type="button">Rules</button>
+        <button id="reset-button" type="button">Reset game</button>
+      </div>
+    </main>
 
-      <section class="rules" aria-labelledby="rules-heading">
-        <h2 id="rules-heading">How to play</h2>
+    <dialog id="rules-dialog" class="rules-dialog" aria-labelledby="rules-heading">
+      <div class="rules">
+        <div class="rules__header">
+          <h2 id="rules-heading">How to play</h2>
+          <button id="rules-close-button" type="button" aria-label="Close rules">
+            Close
+          </button>
+        </div>
 
         <h3>Objective</h3>
         <p>
@@ -71,8 +81,8 @@
           case, the other player wins. The winner is announced and celebrated
           with confetti. Use <strong>Reset game</strong> to start again.
         </p>
-      </section>
-    </main>
+      </div>
+    </dialog>
 
     <script src="script.js"></script>
   </body>

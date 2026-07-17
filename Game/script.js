@@ -1,5 +1,8 @@
 const board = document.querySelector("#board");
 const resetButton = document.querySelector("#reset-button");
+const rulesButton = document.querySelector("#rules-button");
+const rulesCloseButton = document.querySelector("#rules-close-button");
+const rulesDialog = document.querySelector("#rules-dialog");
 const status = document.querySelector("#status");
 
 const BOARD_ROWS = 8;
@@ -360,5 +363,12 @@ function createBoard() {
 
 board.addEventListener("click", handleBoardClick);
 resetButton.addEventListener("click", createBoard);
+rulesButton.addEventListener("click", () => rulesDialog.showModal());
+rulesCloseButton.addEventListener("click", () => rulesDialog.close());
+rulesDialog.addEventListener("click", (event) => {
+  if (event.target === rulesDialog) {
+    rulesDialog.close();
+  }
+});
 
 createBoard();
