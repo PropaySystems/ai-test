@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Checkers</title>
+  <style>
+    :root {
+      --board-size: 640px;
+      --cell-size: calc(var(--board-size) / 8);
+      --light-cell: #f2f2f2;
+      --dark-cell: #111111;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a12 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px #00c8ff, 0 0 16px #39ff14;
+    }
+
+    #status {
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    #board {
+      width: var(--board-size);
+      height: var(--board-size);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      border: 4px solid #333;
+      border-radius: 6px;
+      box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+    }
+
+    .cell {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .cell.light {
+      background-color: var(--light-cell);
+    }
+
+    .cell.dark {
+      background-color: var(--dark-cell);
+    }
+
+    .cell.highlight::after {
+      content: "";
+      position: absolute;
+      width: 30%;
+      height: 30%;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+    }
+
+    .piece {
+      width: 72%;
+      height: 72%;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .piece.blue {
+      background: radial-gradient(circle at 35% 30%, #66e0ff, #0077ff 60%, #0033aa);
+      box-shadow: 0 0 10px #00c8ff, 0 0 20px #00c8ff, inset 0 0 8px #aef2ff;
+    }
+
+    .piece.green {
+      background: radial-gradient(circle at 35% 30%, #b6ff8f, #39ff14 60%, #1a9e00);
+      box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, inset 0 0 8px #ccffbb;
+    }
+
+    .piece.selected {
+      transform: scale(1.1);
+      box-shadow: 0 0 18px #fff, 0 0 30px currentColor;
+    }
+
+    .piece.king::after {
+      content: "\2605";
+      position: absolute;
+      color: #fff;
+      font-size: calc(var(--cell-size) * 0.35);
+      text-shadow: 0 0 6px #000;
+      pointer-events: none;
+    }
+
+    #controls {
+      display: flex;
+      gap: 16px;
+    }
+
+    button {
+      background: linear-gradient(135deg, #00c8ff, #39ff14);
+      border: none;
+      color: #0a0a12;
+      font-weight: bold;
+      letter-spacing: 1px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: transform 0.1s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <h1>Neon Checkers</h1>
+  <div id="status">Player 1 (Neon Blue) to move</div>
+  <div id="board"></div>
+  <div id="controls">
+    <button id="reset">Reset Game</button>
+  </div>
+
+  <script>
+    const SIZE = 8;
+    const PLAYER_ONE = 1; // Neon Blue
+    const PLAYER_TWO = 2; // Neon Green
+
+    const boardEl = document.getElementById("board");
+    const statusEl = document.getElementById("status");
+    const resetBtn = document.getElementById("reset");
+
+    let board = [];        // 2D array: null or { player, king }
+    let currentPlayer = PLAYER_ONE;
+    let selected = null;   // { row, col }
+
+    // A cell is "dark" (playable) when (row + col) is odd.
+    function isDarkCell(row, col) {
+      return (row + col) % 2 === 1;
+    }
+
+    // Build the initial board state with 12 pieces per player on dark cells.
+    function createInitialBoard() {
+      const newBoard = [];
+      for (let row = 0; row < SIZE; row++) {
+        const rowArr = [];
+        for (let col = 0; col < SIZE; col++) {
+          let piece = null;
+          if (isDarkCell(row, col)) {
+            if (row < 3) {
+              // Player 2 (Neon Green) occupies the top three rows.
+              piece = { player: PLAYER_TWO, king: false };
+            } else if (row > 4) {
+              // Player 1 (Neon Blue) occupies the bottom three rows.
+              piece = { player: PLAYER_ONE, king: false };
+            }
+          }
+          rowArr.push(piece);
+        }
+        newBoard.push(rowArr);
+      }
+      return newBoard;
+    }
+
+    function render() {
+      boardEl.innerHTML = "";
+      for (let row = 0; row < SIZE; row++) {
+        for (let col = 0; col < SIZE; col++) {
+          const cell = document.createElement("div");
+          cell.className = "cell " + (isDarkCell(row, col) ? "dark" : "light");
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+          cell.addEventListener("click", onCellClick);
+
+          const piece = board[row][col];
+          if (piece) {
+            const p = document.createElement("div");
+            p.className = "piece " + (piece.player === PLAYER_ONE ? "blue" : "green");
+            if (piece.king) p.classList.add("king");
+            if (selected && selected.row === row && selected.col === col) {
+              p.classList.add("selected");
+            }
+            cell.appendChild(p);
+          }
+
+          boardEl.appendChild(cell);
+        }
+      }
+      highlightMoves();
+    }
+
+    function highlightMoves() {
+      if (!selected) return;
+      const moves = getValidMoves(selected.row, selected.col);
+      moves.forEach((m) => {
+        const idx = m.row * SIZE + m.col;
+        const cell = boardEl.children[idx];
+        if (cell) cell.classList.add("highlight");
+      });
+    }
+
+    // Return valid moves (simple steps and captures) for the piece at row,col.
+    function getValidMoves(row, col) {
+      const piece = board[row][col];
+      if (!piece) return [];
+
+      const moves = [];
+      const directions = [];
+
+      // Movement direction: player 1 moves up (-1), player 2 moves down (+1).
+      // Kings move in both directions.
+      const forward = piece.player === PLAYER_ONE ? -1 : 1;
+      if (piece.king) {
+        directions.push(-1, 1);
+      } else {
+        directions.push(forward);
+      }
+
+      for (const dr of directions) {
+        for (const dc of [-1, 1]) {
+          // Simple move
+          const r1 = row + dr;
+          const c1 = col + dc;
+          if (inBounds(r1, c1) && board[r1][c1] === null) {
+            moves.push({ row: r1, col: c1, capture: null });
+          }
+          // Capture move
+          const r2 = row + dr * 2;
+          const c2 = col + dc * 2;
+          if (
+            inBounds(r2, c2) &&
+            board[r2][c2] === null &&
+            board[r1] &&
+            board[r1][c1] &&
+            board[r1][c1].player !== piece.player
+          ) {
+            moves.push({ row: r2, col: c2, capture: { row: r1, col: c1 } });
+          }
+        }
+      }
+      return moves;
+    }
+
+    function inBounds(row, col) {
+      return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
+    }
+
+    function onCellClick(e) {
+      const row = parseInt(e.currentTarget.dataset.row, 10);
+      const col = parseInt(e.currentTarget.dataset.col, 10);
+      const piece = board[row][col];
+
+      // Selecting one of the current player's pieces.
+      if (piece && piece.player === currentPlayer) {
+        selected = { row, col };
+        render();
+        return;
+      }
+
+      // Attempting to move to a target cell.
+      if (selected) {
+        const moves = getValidMoves(selected.row, selected.col);
+        const move = moves.find((m) => m.row === row && m.col === col);
+        if (move) {
+          applyMove(selected, move);
+        }
+      }
+    }
+
+    function applyMove(from, move) {
+      const piece = board[from.row][from.col];
+      board[from.row][from.col] = null;
+      board[move.row][move.col] = piece;
+
+      if (move.capture) {
+        board[move.capture.row][move.capture.col] = null;
+      }
+
+      // Promote to king when reaching the far row.
+      if (piece.player === PLAYER_ONE && move.row === 0) piece.king = true;
+      if (piece.player === PLAYER_TWO && move.row === SIZE - 1) piece.king = true;
+
+      selected = null;
+      switchPlayer();
+      render();
+      checkWin();
+    }
+
+    function switchPlayer() {
+      currentPlayer = currentPlayer === PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE;
+      updateStatus();
+    }
+
+    function updateStatus() {
+      const label =
+        currentPlayer === PLAYER_ONE
+          ? "Player 1 (Neon Blue) to move"
+          : "Player 2 (Neon Green) to move";
+      statusEl.textContent = label;
+    }
+
+    function countPieces(player) {
+      let count = 0;
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (board[r][c] && board[r][c].player === player) count++;
+        }
+      }
+      return count;
+    }
+
+    function checkWin() {
+      const p1 = countPieces(PLAYER_ONE);
+      const p2 = countPieces(PLAYER_TWO);
+      if (p1 === 0) {
+        statusEl.textContent = "Player 2 (Neon Green) wins!";
+      } else if (p2 === 0) {
+        statusEl.textContent = "Player 1 (Neon Blue) wins!";
+      }
+    }
+
+    function resetGame() {
+      board = createInitialBoard();
+      currentPlayer = PLAYER_ONE;
+      selected = null;
+      updateStatus();
+      render();
+    }
+
+    resetBtn.addEventListener("click", resetGame);
+
+    // Start the game.
+    resetGame();
+  </script>
+</body>
+</html>
