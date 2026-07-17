@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dots — Board Game</title>
+  <style>
+    :root {
+      --square-blue: #1a4a8a;
+      --square-black: #0d0d0d;
+      --p1: #f5f5f5;
+      --p2: #e63946;
+      --bg: #12161f;
+      --panel: #1c2230;
+      --text: #e8ecf4;
+      --muted: #9aa3b5;
+      --accent: #3d7dd6;
+      --valid: rgba(80, 200, 120, 0.45);
+      --selected: rgba(255, 220, 80, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse at 20% 0%, #1a2a4a 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, #2a1520 0%, transparent 45%),
+        var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 2rem;
+      gap: 1.25rem;
+    }
+
+    h1 {
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-size: 1.75rem;
+      text-transform: uppercase;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 28rem;
+      text-align: center;
+      line-height: 1.45;
+      margin-top: -0.5rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .status {
+      font-size: 1.05rem;
+      min-width: 12rem;
+      text-align: center;
+    }
+
+    .status strong {
+      color: var(--accent);
+    }
+
+    .scores {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .score {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .score .dot-preview {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+    }
+
+    .score .dot-preview.p1 { background: var(--p1); }
+    .score .dot-preview.p2 { background: var(--p2); }
+
+    .score.active {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+      border-radius: 6px;
+      padding: 0.2rem 0.4rem;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1rem;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      transition: filter 0.15s, transform 0.1s;
+    }
+
+    button:hover { filter: brightness(1.1); }
+    button:active { transform: scale(0.98); }
+    button.secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: var(--text);
+    }
+
+    .setup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .setup .choices {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .board-wrap {
+      position: relative;
+      padding: 8px;
+      background: #050505;
+      border-radius: 8px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      width: min(92vw, 480px);
+      aspect-ratio: 1;
+      border: 2px solid #333;
+    }
+
+    .square {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+      user-select: none;
+    }
+
+    .square.blue { background: var(--square-blue); }
+    .square.black { background: var(--square-black); }
+
+    .square.valid {
+      cursor: pointer;
+      box-shadow: inset 0 0 0 999px var(--valid);
+    }
+
+    .square.selected {
+      box-shadow: inset 0 0 0 999px var(--selected);
+    }
+
+    .dot {
+      width: 58%;
+      height: 58%;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.12s;
+      box-shadow:
+        inset 0 -3px 6px rgba(0, 0, 0, 0.35),
+        0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .dot.p1 { background: var(--p1); }
+    .dot.p2 { background: var(--p2); }
+
+    .dot:hover { transform: scale(1.08); }
+    .square.selected .dot { transform: scale(1.12); }
+
+    .rules {
+      color: var(--muted);
+      font-size: 0.85rem;
+      max-width: 32rem;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .hidden { display: none !important; }
+
+    .overlay {
+      position: absolute;
+      inset: 8px;
+      background: rgba(10, 14, 22, 0.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    .overlay h2 {
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dots <span>Board</span></h1>
+  <p class="subtitle">
+    Two players, 12 dots each. Move one step across (up, down, left, or right).
+    Capture by landing on an opponent. Player 2 uses red (color was not specified).
+  </p>
+
+  <div id="setup" class="panel setup">
+    <p>Who moves first?</p>
+    <div class="choices">
+      <button type="button" id="start-p1">Player 1 (white)</button>
+      <button type="button" id="start-p2">Player 2 (red)</button>
+    </div>
+  </div>
+
+  <div id="game-ui" class="panel hidden">
+    <div class="scores">
+      <div class="score" id="score-p1">
+        <span class="dot-preview p1"></span>
+        Player 1: <span id="count-p1">12</span>
+      </div>
+      <div class="score" id="score-p2">
+        <span class="dot-preview p2"></span>
+        Player 2: <span id="count-p2">12</span>
+      </div>
+    </div>
+    <div class="status" id="status">Player 1's turn</div>
+    <button type="button" class="secondary" id="restart">New game</button>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board" aria-label="8 by 8 game board"></div>
+    <div id="overlay" class="overlay hidden">
+      <h2 id="winner-text">Player 1 wins!</h2>
+      <button type="button" id="play-again">Play again</button>
+    </div>
+  </div>
+
+  <p class="rules">
+    Click your dot, then click a highlighted square one step across.
+    You may move onto an empty square or capture an enemy dot.
+    Win by capturing all 12 of the opponent's dots, or when they have no legal moves.
+  </p>
+
+  <script>
+    const SIZE = 8;
+    const EMPTY = 0;
+    const P1 = 1;
+    const P2 = 2;
+
+    const boardEl = document.getElementById("board");
+    const setupEl = document.getElementById("setup");
+    const gameUiEl = document.getElementById("game-ui");
+    const statusEl = document.getElementById("status");
+    const countP1El = document.getElementById("count-p1");
+    const countP2El = document.getElementById("count-p2");
+    const scoreP1El = document.getElementById("score-p1");
+    const scoreP2El = document.getElementById("score-p2");
+    const overlayEl = document.getElementById("overlay");
+    const winnerTextEl = document.getElementById("winner-text");
+
+    let board = [];
+    let current = P1;
+    let selected = null;
+    let gameOver = false;
+    let started = false;
+
+    function createInitialBoard() {
+      const b = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
+      // 12 dots each, draughts-style: dark squares of first/last 3 rows
+      // Dark squares where (r + c) is odd, matching black tiles in our coloring
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if ((r + c) % 2 === 1) b[r][c] = P2;
+        }
+      }
+      for (let r = 5; r < 8; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if ((r + c) % 2 === 1) b[r][c] = P1;
+        }
+      }
+      return b;
+    }
+
+    function squareColor(r, c) {
+      // Top-left is blue; alternate blue / black
+      return (r + c) % 2 === 0 ? "blue" : "black";
+    }
+
+    function inBounds(r, c) {
+      return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
+    }
+
+    /** One step across: orthogonal only */
+    function getMoves(r, c, player) {
+      const moves = [];
+      const dirs = [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+      ];
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (!inBounds(nr, nc)) continue;
+        const cell = board[nr][nc];
+        if (cell === EMPTY || cell !== player) {
+          moves.push([nr, nc]);
+        }
+      }
+      return moves;
+    }
+
+    function hasAnyMove(player) {
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (board[r][c] === player && getMoves(r, c, player).length > 0) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function countPieces(player) {
+      let n = 0;
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (board[r][c] === player) n++;
+        }
+      }
+      return n;
+    }
+
+    function playerName(p) {
+      return p === P1 ? "Player 1 (white)" : "Player 2 (red)";
+    }
+
+    function checkEnd() {
+      const c1 = countPieces(P1);
+      const c2 = countPieces(P2);
+      if (c1 === 0) return P2;
+      if (c2 === 0) return P1;
+      if (!hasAnyMove(current)) {
+        return current === P1 ? P2 : P1;
+      }
+      return null;
+    }
+
+    function endGame(winner) {
+      gameOver = true;
+      selected = null;
+      winnerTextEl.textContent = `${playerName(winner)} wins!`;
+      overlayEl.classList.remove("hidden");
+      statusEl.innerHTML = `<strong>${playerName(winner)}</strong> wins!`;
+      render();
+    }
+
+    function updateStatus() {
+      countP1El.textContent = countPieces(P1);
+      countP2El.textContent = countPieces(P2);
+      scoreP1El.classList.toggle("active", !gameOver && current === P1);
+      scoreP2El.classList.toggle("active", !gameOver && current === P2);
+      if (!gameOver) {
+        statusEl.innerHTML = `<strong>${playerName(current)}</strong>'s turn`;
+      }
+    }
+
+    function render() {
+      boardEl.innerHTML = "";
+      const validSet = new Set();
+      if (selected && !gameOver) {
+        const moves = getMoves(selected.r, selected.c, current);
+        for (const [r, c] of moves) validSet.add(`${r},${c}`);
+      }
+
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const sq = document.createElement("div");
+          sq.className = `square ${squareColor(r, c)}`;
+          sq.dataset.r = r;
+          sq.dataset.c = c;
+
+          if (selected && selected.r === r && selected.c === c) {
+            sq.classList.add("selected");
+          }
+          if (validSet.has(`${r},${c}`)) {
+            sq.classList.add("valid");
+          }
+
+          const piece = board[r][c];
+          if (piece !== EMPTY) {
+            const dot = document.createElement("div");
+            dot.className = `dot ${piece === P1 ? "p1" : "p2"}`;
+            dot.setAttribute("role", "button");
+            dot.setAttribute(
+              "aria-label",
+              piece === P1 ? "Player 1 dot" : "Player 2 dot"
+            );
+            sq.appendChild(dot);
+          }
+
+          sq.addEventListener("click", () => onSquareClick(r, c));
+          boardEl.appendChild(sq);
+        }
+      }
+      updateStatus();
+    }
+
+    function onSquareClick(r, c) {
+      if (!started || gameOver) return;
+
+      const piece = board[r][c];
+
+      if (selected) {
+        const moves = getMoves(selected.r, selected.c, current);
+        const isMove = moves.some(([mr, mc]) => mr === r && mc === c);
+        if (isMove) {
+          board[r][c] = current;
+          board[selected.r][selected.c] = EMPTY;
+          selected = null;
+          current = current === P1 ? P2 : P1;
+          render();
+          const winner = checkEnd();
+          if (winner) endGame(winner);
+          return;
+        }
+        // Click same piece: deselect
+        if (selected.r === r && selected.c === c) {
+          selected = null;
+          render();
+          return;
+        }
+      }
+
+      if (piece === current) {
+        selected = { r, c };
+        render();
+      } else {
+        selected = null;
+        render();
+      }
+    }
+
+    function startGame(firstPlayer) {
+      board = createInitialBoard();
+      current = firstPlayer;
+      selected = null;
+      gameOver = false;
+      started = true;
+      setupEl.classList.add("hidden");
+      gameUiEl.classList.remove("hidden");
+      overlayEl.classList.add("hidden");
+      render();
+    }
+
+    function showSetup() {
+      started = false;
+      gameOver = false;
+      selected = null;
+      setupEl.classList.remove("hidden");
+      gameUiEl.classList.add("hidden");
+      overlayEl.classList.add("hidden");
+      board = createInitialBoard();
+      render();
+    }
+
+    document.getElementById("start-p1").addEventListener("click", () => startGame(P1));
+    document.getElementById("start-p2").addEventListener("click", () => startGame(P2));
+    document.getElementById("restart").addEventListener("click", showSetup);
+    document.getElementById("play-again").addEventListener("click", showSetup);
+
+    // Preview board before start
+    board = createInitialBoard();
+    render();
+  </script>
+</body>
+</html>
