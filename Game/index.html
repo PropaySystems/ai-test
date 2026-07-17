@@ -12,6 +12,65 @@
       <p id="status" aria-live="polite">Game ready</p>
       <div id="board" class="board" aria-label="Game board"></div>
       <button id="reset-button" type="button">Reset game</button>
+
+      <section class="rules" aria-labelledby="rules-heading">
+        <h2 id="rules-heading">How to play</h2>
+
+        <h3>Objective</h3>
+        <p>
+          Win by capturing all of your opponent's pieces or leaving your
+          opponent without a legal move.
+        </p>
+
+        <h3>Setup</h3>
+        <ol>
+          <li>The game is played by two players on an 8×8 board.</li>
+          <li>One player controls 12 black pieces; the other controls 12 white pieces.</li>
+          <li>Pieces begin on the dark squares of the first three rows at each end.</li>
+          <li>Black takes the first turn.</li>
+        </ol>
+
+        <h3>Taking a turn</h3>
+        <ol>
+          <li>Select one of your pieces, then select its destination.</li>
+          <li>A normal piece moves one square diagonally forward onto an empty dark square.</li>
+          <li>Only one normal move may be made per turn.</li>
+          <li>Play then passes to the other player.</li>
+        </ol>
+
+        <h3>Capturing</h3>
+        <ol>
+          <li>
+            Capture by jumping diagonally over an adjacent opponent piece into
+            the empty square immediately behind it.
+          </li>
+          <li>The jumped piece is removed from the board immediately.</li>
+          <li>A normal piece may only jump forward.</li>
+          <li>If any of your pieces can capture, you must make a capture.</li>
+          <li>
+            If the capturing piece can jump again after landing, it must
+            continue jumping until no further capture is available.
+          </li>
+        </ol>
+
+        <h3>Kings</h3>
+        <ol>
+          <li>
+            A normal piece becomes a king immediately upon reaching the last
+            row on the opposite side of the board.
+          </li>
+          <li>Kings are marked with the word “KING”.</li>
+          <li>Kings may move and capture diagonally both forward and backward.</li>
+          <li>Kings still move one square normally and jump one adjacent piece at a time.</li>
+        </ol>
+
+        <h3>Ending the game</h3>
+        <p>
+          The game ends when a player has no pieces remaining or cannot make a
+          legal move. The other player wins. Use <strong>Reset game</strong> to
+          start again.
+        </p>
+      </section>
     </main>
 
     <script src="script.js"></script>

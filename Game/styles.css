@@ -12,7 +12,8 @@ body {
   min-height: 100vh;
   margin: 0;
   display: grid;
-  place-items: center;
+  place-items: start center;
+  padding: 2rem 0;
 }
 
 .game {
@@ -101,4 +102,32 @@ body {
 
 #reset-button:hover {
   background: #1d4ed8;
+}
+
+.rules {
+  margin-top: 2rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border-radius: 0.75rem;
+  text-align: left;
+  line-height: 1.6;
+  background: #ffffff;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 10%);
+}
+
+.rules h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.rules h3 {
+  margin-bottom: 0.25rem;
+}
+
+.rules p,
+.rules ol {
+  margin-top: 0.25rem;
+}
+
+.rules li + li {
+  margin-top: 0.35rem;
 }

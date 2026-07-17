@@ -142,3 +142,17 @@ These pieces can move forward and backwards
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:38
+
+**User prompt:**
+
+The game is done
+
+Now create a full rules list on how to play the game
+
+**Images or references:**
+
+None provided
