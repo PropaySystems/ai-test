@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>8×8 Turn-Based Board Game</title>
+  <title>Dark-Square Duel — Pure JavaScript</title>
   <style>
     :root {
       --bg: #1a2332;
@@ -12,7 +12,6 @@
       --muted: #9aabbf;
       --accent: #3d9a8b;
       --accent-hover: #4cb5a4;
-      --danger: #c45c5c;
       --light-sq: #c5d0de;
       --dark-sq: #3a4a5c;
       --dark-piece: #1c1410;
@@ -23,9 +22,7 @@
       --path: #6ea8ff;
       --font: "Segoe UI", "Helvetica Neue", sans-serif;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -41,39 +38,26 @@
       padding: 1.25rem;
       gap: 1rem;
     }
-
     h1 {
       margin: 0;
       font-weight: 650;
       font-size: clamp(1.25rem, 3vw, 1.75rem);
-      letter-spacing: 0.02em;
     }
-
-    .subtitle {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
+    .subtitle { margin: 0; color: var(--muted); font-size: 0.95rem; }
     .layout {
       display: grid;
-      grid-template-columns: minmax(280px, 520px) minmax(220px, 280px);
+      grid-template-columns: minmax(280px, 520px) minmax(220px, 300px);
       gap: 1.25rem;
-      width: min(900px, 100%);
+      width: min(920px, 100%);
       align-items: start;
     }
-
-    @media (max-width: 760px) {
-      .layout { grid-template-columns: 1fr; }
-    }
-
-    .board-wrap {
+    @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+    .board-wrap, .side-panel, .team-box {
       background: var(--panel);
       border-radius: 12px;
-      padding: 0.85rem;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     }
-
+    .board-wrap { padding: 0.85rem; }
     .board {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
@@ -84,22 +68,18 @@
       overflow: hidden;
       user-select: none;
     }
-
     .square {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: default;
     }
-
     .square.light { background: var(--light-sq); }
     .square.dark { background: var(--dark-sq); cursor: pointer; }
     .square.selected { outline: 3px solid var(--select); outline-offset: -3px; }
     .square.target { box-shadow: inset 0 0 0 3px var(--target); }
     .square.must-capture { box-shadow: inset 0 0 0 3px var(--must); }
     .square.in-path { box-shadow: inset 0 0 0 3px var(--path); }
-
     .square .coord {
       position: absolute;
       left: 3px;
@@ -108,7 +88,6 @@
       opacity: 0.45;
       pointer-events: none;
     }
-
     .piece {
       width: 68%;
       height: 68%;
@@ -119,34 +98,24 @@
       font-size: clamp(0.7rem, 2.8vw, 1.1rem);
       font-weight: 700;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
-      transition: transform 0.12s ease;
     }
-
     .piece.dark {
       background: radial-gradient(circle at 35% 30%, #3a2c24, var(--dark-piece));
       color: #f5d76e;
       border: 2px solid #0d0907;
     }
-
     .piece.light {
       background: radial-gradient(circle at 35% 30%, #fff, var(--light-piece));
       color: #2a3340;
       border: 2px solid #b8b0a4;
     }
-
     .piece.king::after { content: "♛"; }
-
     .side-panel {
-      background: var(--panel);
-      border-radius: 12px;
       padding: 1rem;
       display: flex;
       flex-direction: column;
       gap: 0.85rem;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-      min-height: 100%;
     }
-
     .status-bar {
       background: #1b2738;
       border-radius: 8px;
@@ -154,21 +123,9 @@
       line-height: 1.45;
       font-size: 0.92rem;
     }
-
     .status-bar strong { color: var(--accent); }
-
-    .hint {
-      color: var(--muted);
-      font-size: 0.82rem;
-      margin: 0;
-    }
-
-    .controls {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
+    .hint { color: var(--muted); font-size: 0.82rem; margin: 0; }
+    .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     button {
       appearance: none;
       border: none;
@@ -180,23 +137,20 @@
       background: var(--accent);
       color: #06221e;
     }
-
     button:hover { background: var(--accent-hover); }
     button.secondary { background: #3a4d66; color: var(--text); }
     button.secondary:hover { background: #4a6080; }
     button:disabled { opacity: 0.45; cursor: not-allowed; }
-
     .history {
       flex: 1;
       background: #1b2738;
       border-radius: 8px;
       padding: 0.65rem 0.75rem;
-      max-height: 280px;
+      max-height: 240px;
       overflow: auto;
       font-size: 0.85rem;
     }
-
-    .history h2 {
+    .history h2, .team-box h2 {
       margin: 0 0 0.4rem;
       font-size: 0.8rem;
       text-transform: uppercase;
@@ -204,19 +158,27 @@
       color: var(--muted);
       font-weight: 650;
     }
-
-    .history ol {
-      margin: 0;
-      padding-left: 1.2rem;
-    }
-
+    .history ol { margin: 0; padding-left: 1.2rem; }
     .history li { margin: 0.15rem 0; }
     .legend { font-size: 0.78rem; color: var(--muted); margin: 0; }
+    .team-box {
+      width: min(920px, 100%);
+      padding: 0.85rem 1rem;
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .team-box summary {
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 650;
+    }
+    .team-box ol { margin: 0.5rem 0 0; padding-left: 1.2rem; }
   </style>
 </head>
 <body>
   <h1>Dark-Square Duel</h1>
-  <p class="subtitle">Two-player turn-based game on an 8×8 board · Official rules engine</p>
+  <p class="subtitle">Pure JavaScript · eight-module engine · official rules</p>
 
   <div class="layout">
     <div class="board-wrap">
@@ -239,27 +201,53 @@
     </aside>
   </div>
 
+  <details class="team-box" open>
+    <summary>Team explanation — eight-module architecture</summary>
+    <p>
+      This file is a pure-JavaScript port of the Python engine
+      (<code>board.py</code> / <code>engine.py</code>) plus a browser UI.
+      Board squares use zero-based <code>{ col, row }</code> with dark a1 at
+      <code>(0,0)</code>. Moves use
+      <code>{ start, path, captures, isCapture }</code> — the same shape as the Python
+      <code>Move</code> dataclass. Factories build those plain objects; ES6 classes own behavior.
+    </p>
+    <ol>
+      <li><strong>Constants</strong> — players, piece kinds, diagonals, draw limits</li>
+      <li><strong>BoardUtils</strong> — playable geometry, notation, square/piece/move factories</li>
+      <li><strong>GameState</strong> — 8×8 dark-square piece map, turn, counters, fingerprints</li>
+      <li><strong>MoveGenerator</strong> — quiet moves and maximal capture paths</li>
+      <li><strong>MoveValidator</strong> — legal-move and multi-jump selection checks</li>
+      <li><strong>GameEngine</strong> — apply turns, promotion, win/draw, undo stack</li>
+      <li><strong>UIRenderer</strong> — board paint, highlights, status, history</li>
+      <li><strong>UIEventHandlers</strong> — clicks, mandatory captures, multi-jump lock</li>
+    </ol>
+  </details>
+
 <script>
 /**
  * =============================================================================
- * ARCHITECTURE
+ * ARCHITECTURE / TEAM EXPLANATION
  * -----------------------------------------------------------------------------
- * Self-contained HTML implementation of OFFICIAL_RULES.md.
+ * Single self-contained HTML file. Zero external dependencies.
  *
- * Eight decoupled ES6 modules (classes), wired bottom-up:
+ * Port of the Python game package to pure JavaScript with the same rules from
+ * OFFICIAL_RULES.md and the same eight-module split used by the browser app:
  *
- *   1. Constants      — players, piece kinds, directions, draw limits
- *   2. BoardUtils     — coordinates, playable squares, notation helpers
- *   3. GameState      — mutable board + turn + counters + clone/snapshot
- *   4. MoveGenerator  — quiet moves + capture paths (mandatory multi-jumps)
- *   5. MoveValidator  — legal-move checks + UI selection rules
- *   6. GameEngine     — apply moves, promotion, win/draw, undo stack
- *   7. UIRenderer     — paint board, highlights, status, history
- *   8. UIEventHandlers— click / button interactions + multi-jump lock
+ *   1. Constants       — shared immutable values (class)
+ *   2. BoardUtils      — coordinates + factories createSquare/Piece/Move (class)
+ *   3. GameState       — board representation + turn state (class + factory)
+ *   4. MoveGenerator   — legal quiet moves & capture paths (class)
+ *   5. MoveValidator   — validate moves / UI step selection (class)
+ *   6. GameEngine      — play, promote, end conditions, undo (class + factory)
+ *   7. UIRenderer      — DOM rendering (class + factory)
+ *   8. UIEventHandlers — input / multi-jump enforcement (class + factory)
  *
- * Data flows one way: UI events → Engine → State; Renderer only reads state.
- * Captures are mandatory. Multi-jumps must be completed. Mid-turn promotion
- * does not grant backward jumps until a later turn.
+ * Coding standards:
+ *   - ES6 classes for modules; factory functions for plain data + construction
+ *   - JSDoc on every function (params, returns, sideEffects when relevant)
+ *   - Keep each function body at or under 30 lines
+ *   - Move object: { start, path, captures, isCapture }
+ *   - Square object: { col, row }  (0-based; a1 = {0,0}, playable when even sum)
  * =============================================================================
  */
 
@@ -271,29 +259,21 @@
  * Immutable rules constants shared by every module.
  */
 class Constants {
-  /** @returns {string} Player 1 identifier */
-  static get DARK() { return "dark"; }
-
-  /** @returns {string} Player 2 identifier */
-  static get LIGHT() { return "light"; }
-
-  /** @returns {string} Standard piece type */
-  static get MAN() { return "man"; }
-
-  /** @returns {string} King piece type */
-  static get KING() { return "king"; }
-
-  /** @returns {number} Board width/height */
-  static get SIZE() { return 8; }
-
-  /** @returns {number} Forty-move draw threshold */
-  static get FORTY_MOVE_LIMIT() { return 40; }
-
-  /** @returns {number} Threefold repetition threshold */
-  static get THREEFOLD_LIMIT() { return 3; }
+  /** @returns {string} */ static get DARK() { return "dark"; }
+  /** @returns {string} */ static get LIGHT() { return "light"; }
+  /** @returns {string} */ static get MAN() { return "man"; }
+  /** @returns {string} */ static get KING() { return "king"; }
+  /** @returns {number} */ static get SIZE() { return 8; }
+  /** @returns {number} */ static get FORTY_MOVE_LIMIT() { return 40; }
+  /** @returns {number} */ static get THREEFOLD_LIMIT() { return 3; }
+  /** @returns {string} */ static get FILES() { return "abcdefgh"; }
+  /** @returns {string} */ static get STATUS_PLAYING() { return "playing"; }
+  /** @returns {string} */ static get STATUS_DARK_WINS() { return "dark_wins"; }
+  /** @returns {string} */ static get STATUS_LIGHT_WINS() { return "light_wins"; }
+  /** @returns {string} */ static get STATUS_DRAW() { return "draw"; }
 
   /**
-   * All four diagonal step vectors [colDelta, rowDelta].
+   * Four diagonal step vectors [colDelta, rowDelta].
    * @returns {ReadonlyArray<ReadonlyArray<number>>}
    */
   static get DIAGONALS() {
@@ -304,36 +284,21 @@ class Constants {
       Object.freeze([1, -1]),
     ]);
   }
-
-  /** @returns {string} Column labels a–h */
-  static get FILES() { return "abcdefgh"; }
-
-  /** @returns {string} In-progress status */
-  static get STATUS_PLAYING() { return "playing"; }
-
-  /** @returns {string} Dark win status */
-  static get STATUS_DARK_WINS() { return "dark_wins"; }
-
-  /** @returns {string} Light win status */
-  static get STATUS_LIGHT_WINS() { return "light_wins"; }
-
-  /** @returns {string} Draw status */
-  static get STATUS_DRAW() { return "draw"; }
 }
 
 /* ============================================================================
- * MODULE 2 — BoardUtils
+ * MODULE 2 — BoardUtils (+ data factories)
  * ========================================================================== */
 
 /**
- * Pure helpers for squares, notation, and player geometry.
- * No side effects; does not hold game state.
+ * Pure helpers for the 8×8 dark-square board.
+ * Factories mirror the Python Piece / Move / square tuples.
  */
 class BoardUtils {
   /**
-   * @param {number} col Zero-based column (0 = a)
-   * @param {number} row Zero-based row (0 = rank 1)
-   * @returns {boolean} True when the square is on the board
+   * @param {number} col
+   * @param {number} row
+   * @returns {boolean}
    */
   static onBoard(col, row) {
     const size = Constants.SIZE;
@@ -351,56 +316,78 @@ class BoardUtils {
   }
 
   /**
+   * Factory: square object matching Python (col, row) tuples.
+   * @param {number} col Zero-based file (0 = a)
+   * @param {number} row Zero-based rank (0 = 1)
+   * @returns {{col:number, row:number}}
+   */
+  static createSquare(col, row) {
+    return { col, row };
+  }
+
+  /**
+   * Factory: piece object matching Python Piece(owner, kind).
+   * @param {string} owner Constants.DARK | Constants.LIGHT
+   * @param {string} [kind=Constants.MAN]
+   * @returns {{owner:string, kind:string}}
+   */
+  static createPiece(owner, kind = Constants.MAN) {
+    return { owner, kind };
+  }
+
+  /**
+   * Factory: move object matching Python Move dataclass.
+   * @param {object} parts
+   * @param {{col:number, row:number}} parts.start
+   * @param {Array<{col:number, row:number}>} parts.path Landing squares in order
+   * @param {Array<{col:number, row:number}>} [parts.captures]
+   * @param {boolean} [parts.isCapture]
+   * @returns {{start:object, path:object[], captures:object[], isCapture:boolean}}
+   */
+  static createMove({ start, path, captures = [], isCapture = false }) {
+    return {
+      start: BoardUtils.createSquare(start.col, start.row),
+      path: path.map((sq) => BoardUtils.createSquare(sq.col, sq.row)),
+      captures: captures.map((sq) => BoardUtils.createSquare(sq.col, sq.row)),
+      isCapture,
+    };
+  }
+
+  /**
    * @param {number} col
    * @param {number} row
-   * @returns {string} Algebraic square, e.g. "c3"
+   * @returns {string}
    */
   static formatSquare(col, row) {
     return `${Constants.FILES[col]}${row + 1}`;
   }
 
   /**
-   * @param {string} text Algebraic square
-   * @returns {{col:number, row:number}}
-   */
-  static parseSquare(text) {
-    const normalized = String(text).trim().toLowerCase();
-    const col = Constants.FILES.indexOf(normalized[0]);
-    const row = Number(normalized[1]) - 1;
-    if (!BoardUtils.isPlayable(col, row)) {
-      throw new Error(`Invalid playable square: ${text}`);
-    }
-    return { col, row };
-  }
-
-  /**
    * @param {{col:number, row:number}} square
-   * @returns {string} Key used in the piece map
+   * @returns {string} Map key "col,row"
    */
   static key(square) {
     return `${square.col},${square.row}`;
   }
 
   /**
-   * @param {string} key Map key from {@link BoardUtils.key}
+   * @param {string} key
    * @returns {{col:number, row:number}}
    */
   static fromKey(key) {
     const [colText, rowText] = key.split(",");
-    return { col: Number(colText), row: Number(rowText) };
+    return BoardUtils.createSquare(Number(colText), Number(rowText));
   }
 
   /**
-   * Forward row delta for a player (+1 dark, −1 light).
    * @param {string} player
-   * @returns {number}
+   * @returns {number} +1 for dark, −1 for light
    */
   static forwardDelta(player) {
     return player === Constants.DARK ? 1 : -1;
   }
 
   /**
-   * Promotion row index for a player.
    * @param {string} player
    * @returns {number}
    */
@@ -409,7 +396,6 @@ class BoardUtils {
   }
 
   /**
-   * Opponent of the given player.
    * @param {string} player
    * @returns {string}
    */
@@ -418,7 +404,6 @@ class BoardUtils {
   }
 
   /**
-   * Forward-only diagonal directions for a standard piece.
    * @param {string} player
    * @returns {ReadonlyArray<ReadonlyArray<number>>}
    */
@@ -428,9 +413,8 @@ class BoardUtils {
   }
 
   /**
-   * Build move notation from a move object.
    * @param {{start:object, path:object[], isCapture:boolean}} move
-   * @returns {string}
+   * @returns {string} e.g. "a3-b4" or "c3xe5xg7"
    */
   static moveNotation(move) {
     const start = BoardUtils.formatSquare(move.start.col, move.start.row);
@@ -443,13 +427,24 @@ class BoardUtils {
   }
 
   /**
-   * Compare two square objects.
    * @param {{col:number, row:number}|null} a
    * @param {{col:number, row:number}|null} b
    * @returns {boolean}
    */
   static sameSquare(a, b) {
     return Boolean(a && b && a.col === b.col && a.row === b.row);
+  }
+
+  /**
+   * Promote a man that landed on the opponent home row.
+   * @param {{owner:string, kind:string}} piece
+   * @param {{col:number, row:number}} land
+   * @returns {{owner:string, kind:string}}
+   */
+  static maybePromote(piece, land) {
+    if (piece.kind === Constants.KING) return piece;
+    if (land.row !== BoardUtils.promotionRow(piece.owner)) return piece;
+    return BoardUtils.createPiece(piece.owner, Constants.KING);
   }
 }
 
@@ -458,12 +453,11 @@ class BoardUtils {
  * ========================================================================== */
 
 /**
- * Holds the mutable official game state (board, turn, counters, status).
+ * Official game state: piece map on 32 dark squares + turn metadata.
  */
 class GameState {
   /**
-   * Creates initial or restored state.
-   * @param {object} [snapshot] Optional snapshot from {@link GameState#clone}
+   * @param {object|null} [snapshot]
    */
   constructor(snapshot = null) {
     if (snapshot) {
@@ -480,18 +474,23 @@ class GameState {
   }
 
   /**
-   * Place twelve dark + twelve light men per Section 4.
+   * Factory matching Python Board.initial() + Game defaults.
+   * @param {object|null} [snapshot]
+   * @returns {GameState}
+   */
+  static create(snapshot = null) {
+    return new GameState(snapshot);
+  }
+
+  /**
+   * Twelve dark men on rows 1–3, twelve light men on rows 6–8.
    * @returns {Map<string, {owner:string, kind:string}>}
    * @private
    */
   static #buildInitialPieces() {
     const pieces = new Map();
-    for (let row = 0; row < 3; row += 1) {
-      GameState.#fillRow(pieces, row, Constants.DARK);
-    }
-    for (let row = 5; row < 8; row += 1) {
-      GameState.#fillRow(pieces, row, Constants.LIGHT);
-    }
+    for (let row = 0; row < 3; row += 1) GameState.#fillRow(pieces, row, Constants.DARK);
+    for (let row = 5; row < 8; row += 1) GameState.#fillRow(pieces, row, Constants.LIGHT);
     return pieces;
   }
 
@@ -500,19 +499,21 @@ class GameState {
    * @param {number} row
    * @param {string} owner
    * @returns {void}
+   * @sideEffects Writes into pieces
    * @private
    */
   static #fillRow(pieces, row, owner) {
     for (let col = 0; col < Constants.SIZE; col += 1) {
       if (!BoardUtils.isPlayable(col, row)) continue;
-      pieces.set(BoardUtils.key({ col, row }), { owner, kind: Constants.MAN });
+      const square = BoardUtils.createSquare(col, row);
+      pieces.set(BoardUtils.key(square), BoardUtils.createPiece(owner));
     }
   }
 
   /**
    * @param {object} snapshot
    * @returns {void}
-   * @sideEffects Restores all fields from snapshot
+   * @sideEffects Restores all fields
    * @private
    */
   #restore(snapshot) {
@@ -528,15 +529,13 @@ class GameState {
   }
 
   /**
-   * Deep-enough clone for undo / simulation.
    * @returns {GameState}
    */
   clone() {
-    return new GameState(this.toSnapshot());
+    return GameState.create(this.toSnapshot());
   }
 
   /**
-   * Serializable snapshot used by undo.
    * @returns {object}
    */
   toSnapshot() {
@@ -597,12 +596,12 @@ class GameState {
   }
 
   /**
-   * Position fingerprint for threefold repetition (board + side to move).
+   * Board + side-to-move fingerprint for threefold repetition.
    * @returns {string}
    */
   fingerprint() {
     const cells = [...this.pieces.entries()]
-      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .sort(([left], [right]) => (left < right ? -1 : 1))
       .map(([key, piece]) => `${key}:${piece.owner}:${piece.kind}`)
       .join("|");
     return `${cells}#${this.sideToMove}`;
@@ -619,13 +618,13 @@ class GameState {
  * ========================================================================== */
 
 /**
- * Generates quiet moves and complete capture paths per the official rules.
+ * Generates quiet moves and complete (maximal) capture paths.
  */
 class MoveGenerator {
   /**
-   * Legal turns for the side to move: captures if any, else quiet moves.
+   * Captures if any exist; otherwise quiet moves (mandatory-capture rule).
    * @param {GameState} state
-   * @param {string} [player] Defaults to state.sideToMove
+   * @param {string} [player]
    * @returns {Array<object>}
    */
   static legalMoves(state, player = state.sideToMove) {
@@ -658,15 +657,12 @@ class MoveGenerator {
    */
   static #appendQuietFrom(state, start, piece, moves) {
     for (const [colDelta, rowDelta] of MoveGenerator.#quietDirs(piece)) {
-      const land = { col: start.col + colDelta, row: start.row + rowDelta };
+      const land = BoardUtils.createSquare(start.col + colDelta, start.row + rowDelta);
       if (!BoardUtils.onBoard(land.col, land.row)) continue;
       if (state.getPiece(land)) continue;
-      moves.push({
-        start: { ...start },
-        path: [land],
-        captures: [],
-        isCapture: false,
-      });
+      moves.push(BoardUtils.createMove({
+        start, path: [land], captures: [], isCapture: false,
+      }));
     }
   }
 
@@ -681,7 +677,6 @@ class MoveGenerator {
   }
 
   /**
-   * All complete (maximal) capture paths for a player.
    * @param {GameState} state
    * @param {string} player
    * @returns {Array<object>}
@@ -690,7 +685,7 @@ class MoveGenerator {
     const results = [];
     for (const { square, piece } of state.piecesFor(player)) {
       const wasKing = piece.kind === Constants.KING;
-      MoveGenerator.#exploreCaptures(
+      MoveGenerator.#explore(
         state, square, square, piece, wasKing, [], [], results
       );
     }
@@ -698,92 +693,52 @@ class MoveGenerator {
   }
 
   /**
-   * Depth-first search of capture continuations; records only terminal paths.
-   * @param {GameState} state
-   * @param {object} start
-   * @param {object} current
-   * @param {object} piece
-   * @param {boolean} wasKingAtTurnStart
-   * @param {object[]} path
-   * @param {object[]} captured
-   * @param {object[]} results
+   * DFS over jumps; records only terminal maximal paths.
    * @returns {void}
    * @sideEffects Mutates results
    * @private
    */
-  static #exploreCaptures(
-    state, start, current, piece, wasKingAtTurnStart, path, captured, results
-  ) {
-    const jumps = MoveGenerator.#jumpsFrom(
-      state, current, piece, wasKingAtTurnStart, captured
-    );
+  static #explore(state, start, current, piece, wasKing, path, captured, results) {
+    const jumps = MoveGenerator.#jumpsFrom(state, current, piece, wasKing, captured);
     if (jumps.length === 0) {
       if (path.length > 0) {
-        results.push({
-          start: { ...start },
-          path: path.map((sq) => ({ ...sq })),
-          captures: captured.map((sq) => ({ ...sq })),
-          isCapture: true,
-        });
+        results.push(BoardUtils.createMove({
+          start, path, captures: captured, isCapture: true,
+        }));
       }
       return;
     }
     for (const jump of jumps) {
-      MoveGenerator.#recurseJump(
-        state, start, current, piece, wasKingAtTurnStart,
-        path, captured, jump, results
+      MoveGenerator.#followJump(
+        state, start, current, piece, wasKing, path, captured, jump, results
       );
     }
   }
 
   /**
-   * Apply one jump on a clone and continue searching.
    * @returns {void}
    * @private
    */
-  static #recurseJump(
-    state, start, current, piece, wasKingAtTurnStart, path, captured, jump, results
-  ) {
+  static #followJump(state, start, current, piece, wasKing, path, captured, jump, results) {
     const nextState = state.clone();
     const moving = { ...nextState.getPiece(current) };
     nextState.setPiece(current, null);
     nextState.setPiece(jump.over, null);
-    const landed = MoveGenerator.#maybePromote(moving, jump.land);
+    const landed = BoardUtils.maybePromote(moving, jump.land);
     nextState.setPiece(jump.land, landed);
-    MoveGenerator.#exploreCaptures(
-      nextState,
-      start,
-      jump.land,
-      landed,
-      wasKingAtTurnStart,
-      [...path, jump.land],
-      [...captured, jump.over],
-      results
+    MoveGenerator.#explore(
+      nextState, start, jump.land, landed, wasKing,
+      [...path, jump.land], [...captured, jump.over], results
     );
   }
 
   /**
-   * Immediate promotion when landing on the home row.
-   * @param {object} piece
-   * @param {object} land
-   * @returns {object}
-   * @private
-   */
-  static #maybePromote(piece, land) {
-    if (piece.kind === Constants.KING) return piece;
-    if (land.row !== BoardUtils.promotionRow(piece.owner)) return piece;
-    return { owner: piece.owner, kind: Constants.KING };
-  }
-
-  /**
-   * Single-step jump options from a square.
    * @returns {Array<{over:object, land:object}>}
    * @private
    */
-  static #jumpsFrom(state, square, piece, wasKingAtTurnStart, capturedAlready) {
+  static #jumpsFrom(state, square, piece, wasKing, capturedAlready) {
     const jumps = [];
-    const dirs = MoveGenerator.#jumpDirs(piece, wasKingAtTurnStart);
-    for (const [colDelta, rowDelta] of dirs) {
+    for (const [colDelta, rowDelta] of MoveGenerator.#jumpDirs(piece, wasKing)) {
       const jump = MoveGenerator.#tryJump(
         state, square, piece, colDelta, rowDelta, capturedAlready
       );
@@ -793,7 +748,7 @@ class MoveGenerator {
   }
 
   /**
-   * Directions allowed for jumps this turn (Section 6.7 / 8.2).
+   * Mid-turn promotion keeps forward-only jumps unless already a king.
    * @returns {ReadonlyArray<ReadonlyArray<number>>}
    * @private
    */
@@ -809,14 +764,10 @@ class MoveGenerator {
    * @private
    */
   static #tryJump(state, square, piece, colDelta, rowDelta, capturedAlready) {
-    const over = {
-      col: square.col + colDelta,
-      row: square.row + rowDelta,
-    };
-    const land = {
-      col: square.col + 2 * colDelta,
-      row: square.row + 2 * rowDelta,
-    };
+    const over = BoardUtils.createSquare(square.col + colDelta, square.row + rowDelta);
+    const land = BoardUtils.createSquare(
+      square.col + 2 * colDelta, square.row + 2 * rowDelta
+    );
     if (!BoardUtils.onBoard(land.col, land.row)) return null;
     const victim = state.getPiece(over);
     if (!victim || victim.owner === piece.owner) return null;
@@ -831,11 +782,11 @@ class MoveGenerator {
  * ========================================================================== */
 
 /**
- * Validates moves and click-selection steps against generated legal turns.
+ * Validates complete moves and partial multi-jump click sequences.
  */
 class MoveValidator {
   /**
-   * @param {object} move Candidate move
+   * @param {object} move
    * @param {Array<object>} legalMoves
    * @returns {boolean}
    */
@@ -845,7 +796,6 @@ class MoveValidator {
   }
 
   /**
-   * Whether any mandatory captures exist for the side to move.
    * @param {GameState} state
    * @returns {boolean}
    */
@@ -854,7 +804,6 @@ class MoveValidator {
   }
 
   /**
-   * Squares that currently hold pieces able to capture.
    * @param {Array<object>} legalMoves
    * @returns {object[]}
    */
@@ -863,13 +812,13 @@ class MoveValidator {
     for (const move of legalMoves) {
       if (!move.isCapture) continue;
       if (starts.some((sq) => BoardUtils.sameSquare(sq, move.start))) continue;
-      starts.push({ ...move.start });
+      starts.push(BoardUtils.createSquare(move.start.col, move.start.row));
     }
     return starts;
   }
 
   /**
-   * Legal moves that begin at start and match the partial landing path so far.
+   * Moves that share start and match the clicked landing prefix.
    * @param {Array<object>} legalMoves
    * @param {object} start
    * @param {object[]} partialPath
@@ -886,7 +835,6 @@ class MoveValidator {
   }
 
   /**
-   * Next landing squares still available given a partial multi-jump.
    * @param {Array<object>} legalMoves
    * @param {object} start
    * @param {object[]} partialPath
@@ -900,14 +848,13 @@ class MoveValidator {
       if (nextIndex >= move.path.length) continue;
       const land = move.path[nextIndex];
       if (!lands.some((sq) => BoardUtils.sameSquare(sq, land))) {
-        lands.push({ ...land });
+        lands.push(BoardUtils.createSquare(land.col, land.row));
       }
     }
     return lands;
   }
 
   /**
-   * True when the partial path uniquely completes one legal move.
    * @param {Array<object>} legalMoves
    * @param {object} start
    * @param {object[]} partialPath
@@ -916,12 +863,10 @@ class MoveValidator {
   static completedMove(legalMoves, start, partialPath) {
     const matches = MoveValidator.matchingMoves(legalMoves, start, partialPath);
     const finished = matches.filter((move) => move.path.length === partialPath.length);
-    if (finished.length === 1) return finished[0];
-    return null;
+    return finished.length === 1 ? finished[0] : null;
   }
 
   /**
-   * Quiet destinations from a selected piece (only when captures are absent).
    * @param {Array<object>} legalMoves
    * @param {object} start
    * @returns {object[]}
@@ -931,7 +876,7 @@ class MoveValidator {
     for (const move of legalMoves) {
       if (move.isCapture) continue;
       if (!BoardUtils.sameSquare(move.start, start)) continue;
-      targets.push({ ...move.path[0] });
+      targets.push(BoardUtils.createSquare(move.path[0].col, move.path[0].row));
     }
     return targets;
   }
@@ -942,15 +887,23 @@ class MoveValidator {
  * ========================================================================== */
 
 /**
- * Applies legal turns, handles promotion / win / draw, and supports undo.
+ * Applies legal turns, promotion, win/draw detection, and undo.
  */
 class GameEngine {
   /**
    * @param {GameState} [state]
    */
-  constructor(state = new GameState()) {
+  constructor(state = GameState.create()) {
     this.state = state;
     this.undoStack = [];
+  }
+
+  /**
+   * Factory for a ready-to-play engine.
+   * @returns {GameEngine}
+   */
+  static create() {
+    return new GameEngine(GameState.create());
   }
 
   /** @returns {Array<object>} */
@@ -960,18 +913,16 @@ class GameEngine {
   }
 
   /**
-   * Start a fresh game.
    * @returns {void}
-   * @sideEffects Resets state and clears undo
+   * @sideEffects Resets state and undo stack
    */
   newGame() {
-    this.state = new GameState();
+    this.state = GameState.create();
     this.undoStack = [];
   }
 
   /**
-   * Apply a complete legal move object.
-   * @param {object} move
+   * @param {object} move Complete Move object
    * @returns {void}
    * @sideEffects Mutates state; pushes undo snapshot
    */
@@ -987,18 +938,16 @@ class GameEngine {
   }
 
   /**
-   * Undo the last completed turn, if any.
-   * @returns {boolean} True when a turn was undone
-   * @sideEffects Restores previous state
+   * @returns {boolean}
+   * @sideEffects Restores previous snapshot when available
    */
   undo() {
     if (this.undoStack.length === 0) return false;
-    this.state = new GameState(this.undoStack.pop());
+    this.state = GameState.create(this.undoStack.pop());
     return true;
   }
 
   /**
-   * Core board mutation for one turn.
    * @param {object} move
    * @returns {void}
    * @private
@@ -1007,30 +956,14 @@ class GameEngine {
     const moving = this.state.getPiece(move.start);
     const wasMan = moving.kind === Constants.MAN;
     this.state.setPiece(move.start, null);
-    for (const captured of move.captures) {
-      this.state.setPiece(captured, null);
-    }
+    for (const captured of move.captures) this.state.setPiece(captured, null);
     let piece = { ...moving };
-    for (const land of move.path) {
-      piece = this.#promoteIfNeeded(piece, land);
-    }
+    for (const land of move.path) piece = BoardUtils.maybePromote(piece, land);
     this.state.setPiece(move.path[move.path.length - 1], piece);
     this.#updateFortyMoveCounter(move, wasMan);
     this.state.moveLog.push(BoardUtils.moveNotation(move));
     this.state.sideToMove = BoardUtils.opponent(this.state.sideToMove);
     this.state.positionHistory.push(this.state.fingerprint());
-  }
-
-  /**
-   * @param {object} piece
-   * @param {object} land
-   * @returns {object}
-   * @private
-   */
-  #promoteIfNeeded(piece, land) {
-    if (piece.kind === Constants.KING) return piece;
-    if (land.row !== BoardUtils.promotionRow(piece.owner)) return piece;
-    return { owner: piece.owner, kind: Constants.KING };
   }
 
   /**
@@ -1048,7 +981,6 @@ class GameEngine {
   }
 
   /**
-   * Detect wins and draws after a completed turn.
    * @returns {void}
    * @private
    */
@@ -1079,8 +1011,8 @@ class GameEngine {
    */
   #isThreefold() {
     const latest = this.state.fingerprint();
-    const count = this.state.positionHistory.filter((item) => item === latest).length;
-    return count >= Constants.THREEFOLD_LIMIT;
+    const hits = this.state.positionHistory.filter((item) => item === latest);
+    return hits.length >= Constants.THREEFOLD_LIMIT;
   }
 
   /**
@@ -1100,26 +1032,34 @@ class GameEngine {
  * ========================================================================== */
 
 /**
- * Renders board, highlights, status bar, and move history from engine state.
+ * Renders board, highlights, status, and history from engine state.
  */
 class UIRenderer {
   /**
-   * @param {object} elements DOM element map
+   * @param {object} elements
    */
   constructor(elements) {
     this.elements = elements;
   }
 
   /**
-   * Full refresh of all UI surfaces.
+   * Factory.
+   * @param {object} elements
+   * @returns {UIRenderer}
+   */
+  static create(elements) {
+    return new UIRenderer(elements);
+  }
+
+  /**
    * @param {GameEngine} engine
-   * @param {object} selection UI selection model
+   * @param {object} selection
    * @returns {void}
-   * @sideEffects Rewrites DOM contents
+   * @sideEffects Rewrites DOM
    */
   render(engine, selection) {
     const legalMoves = engine.legalMoves();
-    const viewState = this.#viewStateForSelection(engine.state, selection, legalMoves);
+    const viewState = this.#viewState(engine.state, selection, legalMoves);
     this.renderBoard(viewState, selection, legalMoves);
     this.renderStatus(engine.state, selection, legalMoves);
     this.renderHistory(engine.state);
@@ -1127,20 +1067,19 @@ class UIRenderer {
   }
 
   /**
-   * Temporary board view while a multi-jump is being clicked through.
-   * @param {GameState} state
-   * @param {object} selection
-   * @param {Array<object>} legalMoves
+   * Preview piece position during an in-progress multi-jump.
    * @returns {GameState}
    * @private
    */
-  #viewStateForSelection(state, selection, legalMoves) {
-    if (!selection.multiJumpActive || selection.partialPath.length === 0) return state;
+  #viewState(state, selection, legalMoves) {
+    if (!selection.multiJumpActive || selection.partialPath.length === 0) {
+      return state;
+    }
     const matches = MoveValidator.matchingMoves(
       legalMoves, selection.selected, selection.partialPath
     );
     if (matches.length === 0) return state;
-    return this.#previewPartialCapture(state, matches[0], selection.partialPath.length);
+    return this.#previewCapture(state, matches[0], selection.partialPath.length);
   }
 
   /**
@@ -1150,23 +1089,15 @@ class UIRenderer {
    * @returns {GameState}
    * @private
    */
-  #previewPartialCapture(state, move, stepsCompleted) {
+  #previewCapture(state, move, stepsCompleted) {
     const preview = state.clone();
-    const piece = preview.getPiece(move.start);
+    let piece = { ...preview.getPiece(move.start) };
     preview.setPiece(move.start, null);
     for (let index = 0; index < stepsCompleted; index += 1) {
       preview.setPiece(move.captures[index], null);
+      piece = BoardUtils.maybePromote(piece, move.path[index]);
     }
-    const land = move.path[stepsCompleted - 1];
-    let shown = { ...piece };
-    for (let index = 0; index < stepsCompleted; index += 1) {
-      const stepLand = move.path[index];
-      if (shown.kind === Constants.MAN &&
-          stepLand.row === BoardUtils.promotionRow(shown.owner)) {
-        shown = { owner: shown.owner, kind: Constants.KING };
-      }
-    }
-    preview.setPiece(land, shown);
+    preview.setPiece(move.path[stepsCompleted - 1], piece);
     return preview;
   }
 
@@ -1175,64 +1106,55 @@ class UIRenderer {
    * @param {object} selection
    * @param {Array<object>} legalMoves
    * @returns {void}
-   * @sideEffects Rebuilds board children
+   * @sideEffects Rebuilds board DOM
    */
   renderBoard(state, selection, legalMoves) {
     const boardEl = this.elements.board;
     boardEl.innerHTML = "";
-    const highlight = this.#buildHighlightSet(selection, legalMoves);
+    const highlight = this.#highlights(selection, legalMoves);
     for (let row = 7; row >= 0; row -= 1) {
       for (let col = 0; col < 8; col += 1) {
-        boardEl.appendChild(this.#createSquare(state, { col, row }, highlight));
+        boardEl.appendChild(this.#squareEl(state, BoardUtils.createSquare(col, row), highlight));
       }
     }
   }
 
   /**
-   * Collect CSS highlight categories for the current selection.
-   * @returns {{selected:object|null, targets:object[], must:object[], path:object[]}}
+   * @returns {object}
    * @private
    */
-  #buildHighlightSet(selection, legalMoves) {
-    const must = selection.multiJumpActive
-      ? []
-      : MoveValidator.capturableStarts(legalMoves);
+  #highlights(selection, legalMoves) {
     return {
       selected: selection.selected,
       targets: selection.targets,
-      must,
+      must: selection.multiJumpActive ? [] : MoveValidator.capturableStarts(legalMoves),
       path: selection.partialPath,
     };
   }
 
   /**
-   * @param {GameState} state
-   * @param {object} square
-   * @param {object} highlight
-   * @returns {HTMLButtonElement|HTMLDivElement}
+   * @returns {HTMLDivElement}
    * @private
    */
-  #createSquare(state, square, highlight) {
+  #squareEl(state, square, highlight) {
     const el = document.createElement("div");
     const playable = BoardUtils.isPlayable(square.col, square.row);
     el.className = `square ${playable ? "dark" : "light"}`;
     el.dataset.col = String(square.col);
     el.dataset.row = String(square.row);
-    if (playable) {
-      el.appendChild(this.#coordLabel(square));
-      this.#applyHighlights(el, square, highlight);
-      const piece = state.getPiece(square);
-      if (piece) el.appendChild(this.#createPieceEl(piece));
-    }
+    if (!playable) return el;
+    el.appendChild(this.#coordEl(square));
+    this.#paintHighlight(el, square, highlight);
+    const piece = state.getPiece(square);
+    if (piece) el.appendChild(this.#pieceEl(piece));
     return el;
   }
 
   /**
-   * @param {object} square
    * @returns {HTMLSpanElement}
    * @private
    */
-  #coordLabel(square) {
+  #coordEl(square) {
     const label = document.createElement("span");
     label.className = "coord";
     label.textContent = BoardUtils.formatSquare(square.col, square.row);
@@ -1240,13 +1162,10 @@ class UIRenderer {
   }
 
   /**
-   * @param {HTMLElement} el
-   * @param {object} square
-   * @param {object} highlight
    * @returns {void}
    * @private
    */
-  #applyHighlights(el, square, highlight) {
+  #paintHighlight(el, square, highlight) {
     if (BoardUtils.sameSquare(square, highlight.selected)) el.classList.add("selected");
     if (highlight.targets.some((sq) => BoardUtils.sameSquare(sq, square))) {
       el.classList.add("target");
@@ -1260,11 +1179,10 @@ class UIRenderer {
   }
 
   /**
-   * @param {object} piece
    * @returns {HTMLDivElement}
    * @private
    */
-  #createPieceEl(piece) {
+  #pieceEl(piece) {
     const el = document.createElement("div");
     el.className = `piece ${piece.owner}`;
     if (piece.kind === Constants.KING) el.classList.add("king");
@@ -1273,36 +1191,20 @@ class UIRenderer {
   }
 
   /**
-   * @param {GameState} state
-   * @param {object} selection
-   * @param {Array<object>} legalMoves
    * @returns {void}
    */
   renderStatus(state, selection, legalMoves) {
     const turnName = state.sideToMove === Constants.DARK
-      ? "Player 1 (Dark)"
-      : "Player 2 (Light)";
-    this.elements.status.innerHTML = this.#statusHtml(state, turnName);
+      ? "Player 1 (Dark)" : "Player 2 (Light)";
+    this.elements.status.innerHTML = [
+      `<div><strong>Turn:</strong> ${turnName}</div>`,
+      `<div><strong>Status:</strong> ${this.#resultText(state)}</div>`,
+      `<div><strong>Forty-move counter:</strong> ${state.fortyMoveCounter}</div>`,
+    ].join("");
     this.elements.hint.textContent = this.#hintText(state, selection, legalMoves);
   }
 
   /**
-   * @param {GameState} state
-   * @param {string} turnName
-   * @returns {string}
-   * @private
-   */
-  #statusHtml(state, turnName) {
-    const result = this.#resultText(state);
-    return [
-      `<div><strong>Turn:</strong> ${turnName}</div>`,
-      `<div><strong>Status:</strong> ${result}</div>`,
-      `<div><strong>Forty-move counter:</strong> ${state.fortyMoveCounter}</div>`,
-    ].join("");
-  }
-
-  /**
-   * @param {GameState} state
    * @returns {string}
    * @private
    */
@@ -1314,9 +1216,6 @@ class UIRenderer {
   }
 
   /**
-   * @param {GameState} state
-   * @param {object} selection
-   * @param {Array<object>} legalMoves
    * @returns {string}
    * @private
    */
@@ -1333,7 +1232,6 @@ class UIRenderer {
   }
 
   /**
-   * @param {GameState} state
    * @returns {void}
    */
   renderHistory(state) {
@@ -1352,7 +1250,7 @@ class UIRenderer {
  * ========================================================================== */
 
 /**
- * Click and button handlers; enforces multi-jump completion in the UI.
+ * Click / button handlers with mandatory-capture and multi-jump enforcement.
  */
 class UIEventHandlers {
   /**
@@ -1364,13 +1262,23 @@ class UIEventHandlers {
     this.engine = engine;
     this.renderer = renderer;
     this.elements = elements;
-    this.selection = this.#emptySelection();
+    this.selection = createSelection();
   }
 
   /**
-   * Wire DOM listeners and paint the first frame.
+   * Factory.
+   * @param {GameEngine} engine
+   * @param {UIRenderer} renderer
+   * @param {object} elements
+   * @returns {UIEventHandlers}
+   */
+  static create(engine, renderer, elements) {
+    return new UIEventHandlers(engine, renderer, elements);
+  }
+
+  /**
    * @returns {void}
-   * @sideEffects Attaches listeners; renders UI
+   * @sideEffects Attaches listeners and paints UI
    */
   bind() {
     this.elements.board.addEventListener("click", (event) => this.onBoardClick(event));
@@ -1380,22 +1288,8 @@ class UIEventHandlers {
   }
 
   /**
-   * @returns {object}
-   * @private
-   */
-  #emptySelection() {
-    return {
-      selected: null,
-      partialPath: [],
-      targets: [],
-      multiJumpActive: false,
-    };
-  }
-
-  /**
-   * Recompute targets and re-render.
    * @returns {void}
-   * @sideEffects Updates selection.targets and DOM
+   * @sideEffects Updates targets and DOM
    */
   refresh() {
     this.#syncTargets();
@@ -1413,17 +1307,14 @@ class UIEventHandlers {
       this.selection.targets = [];
       return;
     }
-    if (this.selection.multiJumpActive || MoveValidator.hasMandatoryCaptures(this.engine.state)) {
-      this.selection.targets = MoveValidator.nextLandingSquares(
-        legal, selected, partialPath
-      );
-      return;
-    }
-    this.selection.targets = MoveValidator.quietTargetsFrom(legal, selected);
+    const mustJump = this.selection.multiJumpActive
+      || MoveValidator.hasMandatoryCaptures(this.engine.state);
+    this.selection.targets = mustJump
+      ? MoveValidator.nextLandingSquares(legal, selected, partialPath)
+      : MoveValidator.quietTargetsFrom(legal, selected);
   }
 
   /**
-   * Board click entry point.
    * @param {MouseEvent} event
    * @returns {void}
    */
@@ -1431,10 +1322,9 @@ class UIEventHandlers {
     if (!this.engine.state.isPlaying) return;
     const squareEl = event.target.closest(".square.dark");
     if (!squareEl) return;
-    const square = {
-      col: Number(squareEl.dataset.col),
-      row: Number(squareEl.dataset.row),
-    };
+    const square = BoardUtils.createSquare(
+      Number(squareEl.dataset.col), Number(squareEl.dataset.row)
+    );
     this.#handleSquareClick(square);
     this.refresh();
   }
@@ -1445,7 +1335,7 @@ class UIEventHandlers {
    * @private
    */
   #handleSquareClick(square) {
-    if (this.#isTargetSquare(square)) {
+    if (this.#isTarget(square)) {
       this.#chooseTarget(square);
       return;
     }
@@ -1458,12 +1348,11 @@ class UIEventHandlers {
    * @returns {boolean}
    * @private
    */
-  #isTargetSquare(square) {
+  #isTarget(square) {
     return this.selection.targets.some((sq) => BoardUtils.sameSquare(sq, square));
   }
 
   /**
-   * Select a piece if it belongs to the side to move and can move.
    * @param {object} square
    * @returns {void}
    * @private
@@ -1471,25 +1360,17 @@ class UIEventHandlers {
   #trySelectPiece(square) {
     const piece = this.engine.state.getPiece(square);
     if (!piece || piece.owner !== this.engine.state.sideToMove) {
-      this.selection = this.#emptySelection();
+      this.selection = createSelection();
       return;
     }
     const legal = this.engine.legalMoves();
     const canMove = legal.some((move) => BoardUtils.sameSquare(move.start, square));
-    if (!canMove) {
-      this.selection = this.#emptySelection();
-      return;
-    }
-    this.selection = {
-      selected: { ...square },
-      partialPath: [],
-      targets: [],
-      multiJumpActive: false,
-    };
+    this.selection = canMove
+      ? createSelection({ selected: BoardUtils.createSquare(square.col, square.row) })
+      : createSelection();
   }
 
   /**
-   * Extend a quiet move or capture path by one landing square.
    * @param {object} land
    * @returns {void}
    * @private
@@ -1497,7 +1378,9 @@ class UIEventHandlers {
   #chooseTarget(land) {
     const legal = this.engine.legalMoves();
     const start = this.selection.selected;
-    if (!MoveValidator.hasMandatoryCaptures(this.engine.state) && !this.selection.multiJumpActive) {
+    const capturing = this.selection.multiJumpActive
+      || MoveValidator.hasMandatoryCaptures(this.engine.state);
+    if (!capturing) {
       this.#commitQuiet(start, land, legal);
       return;
     }
@@ -1505,78 +1388,85 @@ class UIEventHandlers {
   }
 
   /**
-   * @param {object} start
-   * @param {object} land
-   * @param {Array<object>} legal
    * @returns {void}
    * @private
    */
   #commitQuiet(start, land, legal) {
-    const move = legal.find(
-      (candidate) =>
-        !candidate.isCapture &&
-        BoardUtils.sameSquare(candidate.start, start) &&
-        BoardUtils.sameSquare(candidate.path[0], land)
+    const move = legal.find((candidate) =>
+      !candidate.isCapture
+      && BoardUtils.sameSquare(candidate.start, start)
+      && BoardUtils.sameSquare(candidate.path[0], land)
     );
     if (!move) return;
     this.engine.play(move);
-    this.selection = this.#emptySelection();
+    this.selection = createSelection();
   }
 
   /**
-   * Append a jump landing; finish when the unique complete path is reached.
-   * @param {object} start
-   * @param {object} land
-   * @param {Array<object>} legal
    * @returns {void}
    * @private
    */
   #commitCaptureStep(start, land, legal) {
-    const partialPath = [...this.selection.partialPath, { ...land }];
+    const partialPath = [...this.selection.partialPath, BoardUtils.createSquare(land.col, land.row)];
     const finished = MoveValidator.completedMove(legal, start, partialPath);
     const nextLands = MoveValidator.nextLandingSquares(legal, start, partialPath);
     if (finished && nextLands.length === 0) {
       this.engine.play(finished);
-      this.selection = this.#emptySelection();
+      this.selection = createSelection();
       return;
     }
-    this.selection.partialPath = partialPath;
-    this.selection.multiJumpActive = true;
-    this.selection.selected = { ...start };
+    this.selection = createSelection({
+      selected: BoardUtils.createSquare(start.col, start.row),
+      partialPath,
+      multiJumpActive: true,
+    });
   }
 
   /**
    * @returns {void}
-   * @sideEffects Resets engine and selection
+   * @sideEffects Resets engine
    */
   onNewGame() {
     this.engine.newGame();
-    this.selection = this.#emptySelection();
+    this.selection = createSelection();
     this.refresh();
   }
 
   /**
    * @returns {void}
-   * @sideEffects Restores previous turn when possible
+   * @sideEffects Undoes one turn when possible
    */
   onUndo() {
     if (!this.engine.undo()) return;
-    this.selection = this.#emptySelection();
+    this.selection = createSelection();
     this.refresh();
   }
 }
 
-/* ============================================================================
- * Bootstrap
- * ========================================================================== */
+/**
+ * Factory for the UI selection model.
+ * @param {object} [parts]
+ * @param {object|null} [parts.selected]
+ * @param {object[]} [parts.partialPath]
+ * @param {object[]} [parts.targets]
+ * @param {boolean} [parts.multiJumpActive]
+ * @returns {object}
+ */
+function createSelection({
+  selected = null,
+  partialPath = [],
+  targets = [],
+  multiJumpActive = false,
+} = {}) {
+  return { selected, partialPath, targets, multiJumpActive };
+}
 
 /**
- * Construct modules and start the UI.
- * @returns {void}
- * @sideEffects Mounts the interactive game
+ * Collect DOM nodes used by the UI modules.
+ * @returns {object}
  */
-function bootGame() {
-  const elements = {
+function createElements() {
+  return {
     board: document.getElementById("board"),
     status: document.getElementById("status"),
     hint: document.getElementById("hint"),
@@ -1584,9 +1474,18 @@ function bootGame() {
     newButton: document.getElementById("btn-new"),
     undoButton: document.getElementById("btn-undo"),
   };
-  const engine = new GameEngine();
-  const renderer = new UIRenderer(elements);
-  const handlers = new UIEventHandlers(engine, renderer, elements);
+}
+
+/**
+ * Bootstrap: wire eight modules and start the game.
+ * @returns {void}
+ * @sideEffects Mounts interactive UI
+ */
+function bootGame() {
+  const elements = createElements();
+  const engine = GameEngine.create();
+  const renderer = UIRenderer.create(elements);
+  const handlers = UIEventHandlers.create(engine, renderer, elements);
   handlers.bind();
 }
 

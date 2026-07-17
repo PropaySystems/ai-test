@@ -10,7 +10,7 @@ Turn-based two-player game on an 8×8 board (32 dark playable squares).
 
 ### Browser UI (self-contained HTML)
 
-Open the single-file app in a browser:
+Open the pure-JavaScript single-file app (eight ES6 modules + factories, no dependencies):
 
 ```bash
 open game/index.html
@@ -23,7 +23,9 @@ python3 -m http.server 8080
 # then visit http://localhost:8080/game/index.html
 ```
 
-The HTML app has eight ES6 modules: Constants, BoardUtils, GameState, MoveGenerator, MoveValidator, GameEngine, UIRenderer, UIEventHandlers.
+Modules: Constants, BoardUtils, GameState, MoveGenerator, MoveValidator, GameEngine, UIRenderer, UIEventHandlers.  
+Factories: `createSquare`, `createPiece`, `createMove`, `createSelection`, plus `GameState.create` / `GameEngine.create` / `UIRenderer.create` / `UIEventHandlers.create`.  
+The page also includes a **Team explanation** section describing the architecture.
 
 ### Python CLI
 
