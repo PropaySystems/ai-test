@@ -29,3 +29,15 @@ None provided
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:41
+
+**User prompt:**
+
+Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
+
+**Images or references:**
+
+None provided
