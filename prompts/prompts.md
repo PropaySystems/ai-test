@@ -86,3 +86,16 @@ Now we need to track whose turn it is to move their pieces
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:24
+
+**User prompt:**
+
+Now the player's who turn is is should be able to move their pieces.
+Pieces can only move diagonally on the board
+
+**Images or references:**
+
+None provided

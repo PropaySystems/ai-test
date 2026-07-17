@@ -48,6 +48,20 @@ function selectCell(cell) {
   selectedCell.classList.add("cell--selected");
 }
 
+function isDiagonalMove(origin, destination) {
+  const originIndex = Number(origin.dataset.index);
+  const destinationIndex = Number(destination.dataset.index);
+  const originRow = Math.floor(originIndex / BOARD_COLS);
+  const originCol = originIndex % BOARD_COLS;
+  const destinationRow = Math.floor(destinationIndex / BOARD_COLS);
+  const destinationCol = destinationIndex % BOARD_COLS;
+
+  return (
+    Math.abs(destinationRow - originRow) === 1 &&
+    Math.abs(destinationCol - originCol) === 1
+  );
+}
+
 function moveSelectedPiece(destination) {
   destination.append(selectedCell.querySelector(".piece"));
   selectedCell.classList.remove("cell--selected");
@@ -75,7 +89,8 @@ function handleBoardClick(event) {
   if (
     selectedCell &&
     !piece &&
-    cell.classList.contains("cell--dark")
+    cell.classList.contains("cell--dark") &&
+    isDiagonalMove(selectedCell, cell)
   ) {
     moveSelectedPiece(cell);
   }
