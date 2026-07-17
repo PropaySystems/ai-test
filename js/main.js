@@ -29,6 +29,10 @@ const required = {
   cardRed: document.getElementById('card-red'),
   hintCaption: document.getElementById('hint-caption'),
   dragGhost: document.getElementById('drag-ghost'),
+  winnerDialog: document.getElementById('winner-dialog'),
+  winnerName: document.getElementById('winner-name'),
+  winnerAvatar: document.getElementById('winner-avatar'),
+  winnerPlayAgain: document.getElementById('winner-play-again'),
 };
 
 const missing = Object.entries(required)

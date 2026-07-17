@@ -29,6 +29,7 @@ import {
  *   currentPlayer: string,
  *   selected: Position|null,
  *   forcedPiece: Position|null,
+ *   captureCount: number,
  *   winner: string|null,
  *   status: string,
  * }} GameState
@@ -314,6 +315,7 @@ export function createInitialState(options = {}) {
     currentPlayer: firstPlayer,
     selected: null,
     forcedPiece: null,
+    captureCount: 0,
     winner: null,
     status: `${capitalize(firstPlayer)} to move`,
   };
@@ -476,6 +478,7 @@ export function moveSelectedTo(state, to) {
   }
 
   const { board: nextBoard, crowned, continuedCaptures } = applyMove(board, move);
+  const captureCount = (state.captureCount ?? 0) + (move.captured ? 1 : 0);
 
   // Multi-jump: same piece must keep jumping if another jump is available.
   // Crowning mid-chain does NOT end the turn (per game choice): the new king
@@ -487,24 +490,34 @@ export function moveSelectedTo(state, to) {
       currentPlayer,
       selected: landing,
       forcedPiece: landing,
+      captureCount,
       winner: null,
       status: crowned
         ? `${capitalize(currentPlayer)} crowned — continue jumping`
-        : `${capitalize(currentPlayer)} must continue jumping`,
+        : `${capitalize(currentPlayer)} must continue jumping — ${captureCount} captured`,
     };
   }
 
   const nextPlayer = opponentOf(currentPlayer);
   const winner = getWinner(nextBoard, nextPlayer);
+  const chainStatus =
+    captureCount >= 2
+      ? `${capitalize(currentPlayer)} completed a ${
+          captureCount === 2 ? 'double jump' : `${captureCount}-jump chain`
+        } — ${capitalize(nextPlayer)} to move`
+      : null;
 
   return {
     board: nextBoard,
     currentPlayer: winner ? currentPlayer : nextPlayer,
     selected: null,
     forcedPiece: null,
+    captureCount: 0,
     winner,
     status: winner
       ? `${capitalize(winner)} wins!`
+      : chainStatus
+        ? chainStatus
       : crowned
         ? `${capitalize(currentPlayer)} crowned — ${capitalize(nextPlayer)} to move`
         : statusMessage(nextBoard, nextPlayer),

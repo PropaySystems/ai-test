@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkers — Local Game Room</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap"
       rel="stylesheet"
-    />
-    <link rel="stylesheet" href="css/styles.css" />
+    >
+    <link rel="stylesheet" href="css/styles.css">
   </head>
   <body>
     <div class="app">
-      <header class="header">
+      <header class="header" aria-label="Checkers game">
         <p class="eyebrow">Tabletop room</p>
         <h1>Checkers</h1>
         <p class="lede">
@@ -103,7 +103,7 @@
 
     <dialog class="setup-dialog" id="setup-dialog" aria-labelledby="setup-title">
       <form method="dialog" class="setup-form" id="setup-form">
-        <header class="setup-form__header">
+        <header class="setup-form__header" aria-label="Player setup">
           <p class="eyebrow">Match setup</p>
           <h2 id="setup-title">Create your players</h2>
           <p>Names, piece colors, and who opens the game.</p>
@@ -121,7 +121,7 @@
                 maxlength="24"
                 autocomplete="nickname"
                 required
-              />
+              >
             </label>
             <label>
               Piece color
@@ -140,7 +140,7 @@
                 maxlength="24"
                 autocomplete="nickname"
                 required
-              />
+              >
             </label>
             <label>
               Piece color
@@ -159,7 +159,7 @@
                 id="first-black"
                 value="black"
                 checked
-              />
+              >
               <span>Bottom player</span>
             </label>
             <label class="choice">
@@ -168,7 +168,7 @@
                 name="firstPlayer"
                 id="first-red"
                 value="red"
-              />
+              >
               <span>Top player</span>
             </label>
           </div>
@@ -185,6 +185,29 @@
           </button>
         </div>
       </form>
+    </dialog>
+
+    <dialog
+      class="winner-dialog"
+      id="winner-dialog"
+      aria-labelledby="winner-title"
+    >
+      <div class="winner-card">
+        <div class="winner-crown" aria-hidden="true">♛</div>
+        <div class="winner-avatar" id="winner-avatar" aria-hidden="true">P1</div>
+        <p class="eyebrow">Match complete</p>
+        <h2 id="winner-title">
+          <span id="winner-name">Player One</span> takes the crown
+        </h2>
+        <p>All hail the champion of the board.</p>
+        <button
+          type="button"
+          class="btn btn--accent"
+          id="winner-play-again"
+        >
+          Play again
+        </button>
+      </div>
     </dialog>
 
     <div class="drag-ghost" id="drag-ghost" hidden aria-hidden="true"></div>

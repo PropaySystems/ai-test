@@ -31,7 +31,8 @@ Uses Node’s built-in test runner against the pure rules engine and player-sett
 - **Player setup** — name both players, pick piece color palettes, choose who moves first; settings persist in `localStorage`
 - **Suggest move** — highlights one recommended legal play without making it
 - **Drag and drop** — pointer-based mouse/touch dragging; click and keyboard still work
-- **Full rules** — mandatory captures, multi-jumps, kings (including continuing after crowning), and both win conditions
+- **Full rules** — mandatory captures, enforced double/multi-jumps, kings (including continuing after crowning), and both win conditions
+- **Winner crown** — the winning player receives a crowned celebration with a quick rematch action
 
 ## Module architecture
 

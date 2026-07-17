@@ -54,6 +54,7 @@ export function createGameUI(elements) {
     elements.resetBtn?.addEventListener('click', onReset);
     elements.hintBtn?.addEventListener('click', onHint);
     elements.settingsBtn?.addEventListener('click', () => openSetupDialog());
+    elements.winnerPlayAgain?.addEventListener('click', onReset);
     elements.setupForm?.addEventListener('submit', onSetupSubmit);
     elements.setupCancel?.addEventListener('click', () => {
       elements.setupDialog?.close('cancel');
@@ -87,6 +88,7 @@ export function createGameUI(elements) {
     renderBoard();
     renderStatus();
     renderHintCaption();
+    renderWinner();
   }
 
   function renderPlayers() {
@@ -123,6 +125,40 @@ export function createGameUI(elements) {
           turnEl.hidden = !(isActive || isWinner);
           turnEl.textContent = isWinner ? 'Winner' : 'To move';
         }
+      }
+    }
+  }
+
+  function renderWinner() {
+    if (!elements.winnerDialog) return;
+
+    if (!state.winner) {
+      if (elements.winnerDialog.open) {
+        elements.winnerDialog.close();
+      }
+      return;
+    }
+
+    const winnerName = displayNameFor(settings, state.winner);
+    const palette = getPalette(settings.players[state.winner].palette);
+
+    if (elements.winnerName) {
+      elements.winnerName.textContent = winnerName;
+    }
+    if (elements.winnerAvatar) {
+      elements.winnerAvatar.textContent = getInitials(winnerName);
+      elements.winnerAvatar.style.setProperty('--winner-base', palette.base);
+      elements.winnerAvatar.style.setProperty(
+        '--winner-highlight',
+        palette.highlight,
+      );
+    }
+
+    if (!elements.winnerDialog.open) {
+      if (typeof elements.winnerDialog.showModal === 'function') {
+        elements.winnerDialog.showModal();
+      } else {
+        elements.winnerDialog.setAttribute('open', '');
       }
     }
   }
@@ -328,6 +364,9 @@ export function createGameUI(elements) {
 
   function onReset() {
     hintedMove = null;
+    if (elements.winnerDialog?.open) {
+      elements.winnerDialog.close();
+    }
     state = resetGame({ firstPlayer: settings.firstPlayer });
     render();
   }

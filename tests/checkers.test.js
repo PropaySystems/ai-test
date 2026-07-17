@@ -136,6 +136,7 @@ describe('multi-jumps', () => {
     place(board, 5, 0, PLAYERS.BLACK);
     place(board, 4, 1, PLAYERS.RED);
     place(board, 2, 3, PLAYERS.RED);
+    place(board, 6, 7, PLAYERS.RED);
 
     let state = {
       ...createInitialState(),
@@ -160,6 +161,16 @@ describe('multi-jumps', () => {
     );
     assert.equal(continued.length, 1);
     assert.deepEqual(continued[0].to, { row: 1, col: 4 });
+
+    state = moveSelectedTo(state, { row: 1, col: 4 });
+
+    assert.equal(state.board[4][1], null);
+    assert.equal(state.board[2][3], null);
+    assert.equal(state.board[1][4]?.player, PLAYERS.BLACK);
+    assert.equal(state.currentPlayer, PLAYERS.RED);
+    assert.equal(state.forcedPiece, null);
+    assert.equal(state.captureCount, 0);
+    assert.match(state.status, /double jump/i);
   });
 });
 
