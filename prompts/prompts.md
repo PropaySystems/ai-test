@@ -99,3 +99,20 @@ Pieces can only move diagonally on the board
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:26
+
+**User prompt:**
+
+To take another player's piece the following has to happen
+
+Jump an adjacent opponent piece diagonally if the square right behind it is empty.
+Captured pieces are removed from the board immediately.
+Jumping is mandatory if a legal jump is available. - GAME RULE
+Multi-jumps are required if the same piece can continue jumping after a landing. - GAME RULE
+
+**Images or references:**
+
+None provided

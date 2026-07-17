@@ -7,6 +7,7 @@ const BOARD_COLS = 8;
 const BOARD_SIZE = BOARD_ROWS * BOARD_COLS;
 let currentPlayer = "black";
 let selectedCell = null;
+let mustContinueJump = false;
 
 function getPieceColor(row, isDark) {
   if (!isDark) {
@@ -24,15 +25,32 @@ function getPieceColor(row, isDark) {
   return null;
 }
 
-function updateStatus() {
+function updateStatus(instruction = "") {
   const playerName = currentPlayer[0].toUpperCase() + currentPlayer.slice(1);
-  status.textContent = `${playerName}'s turn`;
+  status.textContent = instruction
+    ? `${playerName}'s turn — ${instruction}`
+    : `${playerName}'s turn`;
+}
+
+function getCoordinates(cell) {
+  const index = Number(cell.dataset.index);
+
+  return {
+    row: Math.floor(index / BOARD_COLS),
+    col: index % BOARD_COLS,
+  };
+}
+
+function getCell(row, col) {
+  if (row < 0 || row >= BOARD_ROWS || col < 0 || col >= BOARD_COLS) {
+    return null;
+  }
+
+  return board.querySelector(`[data-index="${row * BOARD_COLS + col}"]`);
 }
 
 function updateCellLabel(cell) {
-  const index = Number(cell.dataset.index);
-  const row = Math.floor(index / BOARD_COLS);
-  const col = index % BOARD_COLS;
+  const { row, col } = getCoordinates(cell);
   const piece = cell.querySelector(".piece");
   const pieceDescription = piece ? `${piece.dataset.color} piece, ` : "";
 
@@ -42,6 +60,53 @@ function updateCellLabel(cell) {
   );
 }
 
+function getJumpOptions(cell) {
+  const piece = cell.querySelector(".piece");
+
+  if (!piece) {
+    return [];
+  }
+
+  const { row, col } = getCoordinates(cell);
+  const directions = [
+    [-1, -1],
+    [-1, 1],
+    [1, -1],
+    [1, 1],
+  ];
+
+  return directions.flatMap(([rowDirection, colDirection]) => {
+    const capturedCell = getCell(row + rowDirection, col + colDirection);
+    const destination = getCell(
+      row + rowDirection * 2,
+      col + colDirection * 2,
+    );
+    const capturedPiece = capturedCell?.querySelector(".piece");
+
+    if (
+      capturedPiece &&
+      capturedPiece.dataset.color !== piece.dataset.color &&
+      destination &&
+      !destination.querySelector(".piece")
+    ) {
+      return [{ capturedCell, destination }];
+    }
+
+    return [];
+  });
+}
+
+function getJumpingCells() {
+  return [...board.querySelectorAll(".cell")].filter((cell) => {
+    const piece = cell.querySelector(".piece");
+
+    return (
+      piece?.dataset.color === currentPlayer &&
+      getJumpOptions(cell).length > 0
+    );
+  });
+}
+
 function selectCell(cell) {
   selectedCell?.classList.remove("cell--selected");
   selectedCell = cell;
@@ -49,27 +114,45 @@ function selectCell(cell) {
 }
 
 function isDiagonalMove(origin, destination) {
-  const originIndex = Number(origin.dataset.index);
-  const destinationIndex = Number(destination.dataset.index);
-  const originRow = Math.floor(originIndex / BOARD_COLS);
-  const originCol = originIndex % BOARD_COLS;
-  const destinationRow = Math.floor(destinationIndex / BOARD_COLS);
-  const destinationCol = destinationIndex % BOARD_COLS;
+  const originCoordinates = getCoordinates(origin);
+  const destinationCoordinates = getCoordinates(destination);
 
   return (
-    Math.abs(destinationRow - originRow) === 1 &&
-    Math.abs(destinationCol - originCol) === 1
+    Math.abs(destinationCoordinates.row - originCoordinates.row) === 1 &&
+    Math.abs(destinationCoordinates.col - originCoordinates.col) === 1
   );
 }
 
-function moveSelectedPiece(destination) {
-  destination.append(selectedCell.querySelector(".piece"));
-  selectedCell.classList.remove("cell--selected");
-  updateCellLabel(selectedCell);
-  updateCellLabel(destination);
+function finishTurn() {
+  selectedCell?.classList.remove("cell--selected");
   selectedCell = null;
+  mustContinueJump = false;
   currentPlayer = currentPlayer === "black" ? "white" : "black";
-  updateStatus();
+  updateStatus(getJumpingCells().length ? "a jump is required" : "");
+}
+
+function moveSelectedPiece(destination, capturedCell = null) {
+  const origin = selectedCell;
+  destination.append(selectedCell.querySelector(".piece"));
+  origin.classList.remove("cell--selected");
+
+  if (capturedCell) {
+    capturedCell.querySelector(".piece").remove();
+    updateCellLabel(capturedCell);
+  }
+
+  updateCellLabel(origin);
+  updateCellLabel(destination);
+
+  if (capturedCell && getJumpOptions(destination).length > 0) {
+    selectedCell = destination;
+    selectedCell.classList.add("cell--selected");
+    mustContinueJump = true;
+    updateStatus("continue jumping with the selected piece");
+    return;
+  }
+
+  finishTurn();
 }
 
 function handleBoardClick(event) {
@@ -80,18 +163,46 @@ function handleBoardClick(event) {
   }
 
   const piece = cell.querySelector(".piece");
+  const jumpingCells = getJumpingCells();
 
   if (piece?.dataset.color === currentPlayer) {
+    if (mustContinueJump && cell !== selectedCell) {
+      updateStatus("continue jumping with the selected piece");
+      return;
+    }
+
+    if (jumpingCells.length > 0 && !jumpingCells.includes(cell)) {
+      updateStatus("a jump is required");
+      return;
+    }
+
     selectCell(cell);
     return;
   }
 
-  if (
-    selectedCell &&
-    !piece &&
-    cell.classList.contains("cell--dark") &&
-    isDiagonalMove(selectedCell, cell)
-  ) {
+  if (!selectedCell || piece || !cell.classList.contains("cell--dark")) {
+    return;
+  }
+
+  const jump = getJumpOptions(selectedCell).find(
+    (option) => option.destination === cell,
+  );
+
+  if (jump) {
+    moveSelectedPiece(cell, jump.capturedCell);
+    return;
+  }
+
+  if (mustContinueJump || jumpingCells.length > 0) {
+    updateStatus(
+      mustContinueJump
+        ? "continue jumping with the selected piece"
+        : "a jump is required",
+    );
+    return;
+  }
+
+  if (isDiagonalMove(selectedCell, cell)) {
     moveSelectedPiece(cell);
   }
 }
@@ -100,6 +211,7 @@ function createBoard() {
   board.replaceChildren();
   currentPlayer = "black";
   selectedCell = null;
+  mustContinueJump = false;
 
   for (let index = 0; index < BOARD_SIZE; index += 1) {
     const row = Math.floor(index / BOARD_COLS);
@@ -123,7 +235,7 @@ function createBoard() {
     board.append(cell);
   }
 
-  updateStatus();
+  updateStatus(getJumpingCells().length ? "a jump is required" : "");
 }
 
 board.addEventListener("click", handleBoardClick);
