@@ -1,116 +1,60 @@
-# AI-test
+# Checkers — Modular JavaScript Game
 
-Instructions for candidates completing this exercise.
+Two-player local checkers (draughts) built with vanilla HTML, CSS, and reusable ES modules.
 
-## Setup
+## Play
 
-### 1. Fork the repository
-
-You do not have write access to the main repository, so you need to work from your own fork.
-
-1. Open [https://github.com/PropaySystems/ai-test](https://github.com/PropaySystems/ai-test)
-2. Click **Fork** in the top-right corner
-3. Choose your GitHub account as the destination
-
-### 2. Clone your fork
-
-Clone the repository from **your fork**, not the main repo:
+Serve the project over HTTP (ES modules do not load from `file://` in most browsers):
 
 ```bash
-git clone https://github.com/YOUR-GITHUB-USERNAME/ai-test.git
-cd ai-test
+npm start
 ```
 
-Replace `YOUR-GITHUB-USERNAME` with your actual GitHub username.
+Then open [http://localhost:4173](http://localhost:4173).
 
-Optionally, add the main repository as `upstream` so you can pull future updates:
+Or use any static server from the project root, for example:
 
 ```bash
-git remote add upstream https://github.com/PropaySystems/ai-test.git
+python3 -m http.server 4173
 ```
 
-Confirm your remotes look correct:
+## Tests
 
 ```bash
-git remote -v
+npm test
 ```
 
-You should see `origin` pointing to your fork and, if added, `upstream` pointing to `PropaySystems/ai-test`.
+Uses Node’s built-in test runner against the pure rules engine in `js/checkers.js`.
 
-### 3. Create a feature branch
+## Module architecture
 
-Create a new feature branch named after yourself:
+| File | Responsibility |
+|------|----------------|
+| [`js/constants.js`](js/constants.js) | Board size, players, piece types, dark-square helpers, move deltas |
+| [`js/checkers.js`](js/checkers.js) | Pure, reusable game state and rules (no DOM) |
+| [`js/ui.js`](js/ui.js) | Rendering, click/keyboard interaction, status display |
+| [`js/main.js`](js/main.js) | Application bootstrap |
+| [`css/styles.css`](css/styles.css) | Board and chrome styling |
+| [`tests/checkers.test.js`](tests/checkers.test.js) | Rules coverage |
 
-```bash
-git checkout -b feature/your-name
-```
+Game rules live only in `checkers.js`, so move generation, captures, crowning, and win checks can be reused from tests, a future AI opponent, or another UI.
 
-Replace `your-name` with your actual name (e.g. `feature/jane-doe`).
+## Gameplay rules
 
-### 4. Follow the instructions you receive
+1. **Setup** — 8×8 board; only the 32 dark squares are used. Each side starts with 12 pieces on the three nearest rows of dark squares. Black moves first.
+2. **Moves** — Men move diagonally forward one empty dark square.
+3. **Captures** — Jump diagonally over an adjacent enemy into the empty square beyond. Captures are mandatory. Multi-jumps with the same piece are required when available.
+4. **Kings** — Reaching the opponent’s back row crowns the piece. Kings move and capture diagonally in both directions. If a piece crowns mid-chain and another jump is available, it continues jumping as a king.
+5. **Winning** — Capture all opponent pieces, or leave them with no legal move on their turn.
 
-Listen to and follow the instructions provided to you during the exercise.
+## Controls
 
-### 5. Install the test rule in your LLM or IDE
+- Click a piece, then a highlighted destination.
+- Keyboard: Tab to a square, Enter or Space to select / move.
+- **New game** resets the board.
 
-Copy the rule file from the **test rules** section of this repo:
+---
 
-```
-test-rules/commit-user-prompts.mdc
-```
+## Candidate exercise notes
 
-Move a copy into whatever LLM or IDE you use, so it is **always applied** on every interaction. Where you put it depends on your tool:
-
-| Tool | Typical location |
-|------|------------------|
-| **Cursor** | `.cursor/rules/commit-user-prompts.mdc` |
-| **Other IDEs / agents** | Use that tool’s equivalent “always-on” rules or instructions folder |
-
-The rule tells the AI to log every user prompt to `prompts/prompts.md` and commit the log automatically.
-
-### 6. Test that the rule is working
-
-After the rule is in place, send any prompt to your LLM or instruction AI (for example: “Say hello”).
-
-**Expected result:** the AI creates a `prompts/` folder containing a `prompts.md` file with your prompt logged inside, and commits the change to git.
-
-If that folder and file appear after your test prompt, the rule is installed correctly.
-
-### 7. Push your branch to your fork
-
-When you have completed all instructions, push your feature branch to **your fork**:
-
-```bash
-git push -u origin feature/your-name
-```
-
-### 8. Open a pull request into `master`
-
-Create a pull request from your forked branch into the main repository.
-
-**Option A — GitHub website (recommended)**
-
-1. Go to your fork on GitHub: `https://github.com/YOUR-GITHUB-USERNAME/ai-test`
-2. GitHub will usually show a banner: **Compare & pull request**. Click it.
-   - If you do not see the banner, open the **Pull requests** tab and click **New pull request**
-3. Set:
-   - **base repository:** `PropaySystems/ai-test`
-   - **base branch:** `master`
-   - **head repository:** `YOUR-GITHUB-USERNAME/ai-test`
-   - **compare branch:** `feature/your-name`
-4. Add a title and description, then click **Create pull request**
-
-**Option B — GitHub CLI**
-
-If you use the `gh` CLI, run this from your local repo:
-
-```bash
-gh pr create \
-  --repo PropaySystems/ai-test \
-  --base master \
-  --head YOUR-GITHUB-USERNAME:feature/your-name \
-  --title "Complete candidate exercise" \
-  --body "Completed all setup and exercise instructions."
-```
-
-Replace `YOUR-GITHUB-USERNAME` and `feature/your-name` with your actual values.
+This repository is also used as a hiring exercise. Fork the repo, work on a personal feature branch, install the always-on prompt-logging rule from `test-rules/commit-user-prompts.mdc`, and open a PR into `PropaySystems/ai-test` `master` when finished. See git history and `prompts/prompts.md` for the prompt log required by that rule.

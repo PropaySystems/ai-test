@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkers — Local Two Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <p class="eyebrow">Local two-player</p>
+        <h1>Checkers</h1>
+        <p class="lede">
+          Mandatory captures, multi-jumps, and kings — play both sides on one
+          board.
+        </p>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel--status" aria-live="polite">
+          <div class="turn-badge" id="turn-badge" data-player="black">
+            <span class="turn-badge__swatch" aria-hidden="true"></span>
+            <span id="status-text">Black to move</span>
+          </div>
+
+          <dl class="scoreboard">
+            <div>
+              <dt>Black</dt>
+              <dd id="count-black">12</dd>
+            </div>
+            <div>
+              <dt>Red</dt>
+              <dd id="count-red">12</dd>
+            </div>
+          </dl>
+
+          <button type="button" class="btn" id="reset-btn">New game</button>
+        </section>
+
+        <section class="board-stage" aria-label="Checkers board">
+          <div class="player-label player-label--top">Red</div>
+          <div
+            id="board"
+            class="board"
+            role="grid"
+            aria-label="8 by 8 checkers board"
+          ></div>
+          <div class="player-label player-label--bottom">Black</div>
+        </section>
+
+        <aside class="panel panel--rules">
+          <h2>Rules reminder</h2>
+          <ul>
+            <li>Only dark squares are playable.</li>
+            <li>Men move diagonally forward one square.</li>
+            <li>Captures are mandatory — if you can jump, you must.</li>
+            <li>Continue jumping with the same piece when another jump opens.</li>
+            <li>Reach the far row to become a king (moves both ways).</li>
+            <li>Win by capturing all pieces or leaving no legal moves.</li>
+          </ul>
+          <p class="hint">
+            Tip: click a piece, then a highlighted square. Keyboard users can
+            Tab to squares and press Enter or Space.
+          </p>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
