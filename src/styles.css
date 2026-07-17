@@ -23,6 +23,7 @@ select {
 .game-board {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(8, minmax(0, 1fr));
   width: min(100%, 36rem);
   aspect-ratio: 1;
   border: 0.25rem solid rgb(51 65 85);

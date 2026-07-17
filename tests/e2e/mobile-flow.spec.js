@@ -17,7 +17,29 @@ test("guest completes tutorial and opens a mobile game board", async ({
   await expect(
     page.getByRole("grid", { name: "Edge Kings board" }),
   ).toBeVisible();
-  await expect(page.getByRole("gridcell")).toHaveCount(64);
+  const gridcells = page.getByRole("gridcell");
+  await expect(gridcells).toHaveCount(64);
+
+  const cellBounds = await gridcells.evaluateAll((cells) =>
+    cells.map((cell) => {
+      const { width, height } = cell.getBoundingClientRect();
+      return { width, height };
+    }),
+  );
+  const widths = cellBounds.map(({ width }) => width);
+  const heights = cellBounds.map(({ height }) => height);
+  const tolerance = 1;
+
+  expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(
+    tolerance,
+  );
+  expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(
+    tolerance,
+  );
+  for (const { width, height } of cellBounds) {
+    expect(Math.abs(width - height)).toBeLessThanOrEqual(tolerance);
+  }
+
   await expect(page.getByText("Easy computer")).toBeVisible();
   await expect(page.getByText("Untimed")).toBeVisible();
 
