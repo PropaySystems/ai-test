@@ -131,3 +131,29 @@ body {
 .rules li + li {
   margin-top: 0.35rem;
 }
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti span {
+  position: absolute;
+  top: -1rem;
+  width: 0.65rem;
+  height: 1rem;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+  from {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+  }
+
+  to {
+    transform: translate3d(var(--drift), 110vh, 0) rotate(var(--spin));
+  }
+}

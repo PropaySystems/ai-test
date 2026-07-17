@@ -8,6 +8,7 @@ const BOARD_SIZE = BOARD_ROWS * BOARD_COLS;
 let currentPlayer = "black";
 let selectedCell = null;
 let mustContinueJump = false;
+let gameOver = false;
 
 function getPieceColor(row, isDark) {
   if (!isDark) {
@@ -153,6 +154,47 @@ function promotePiece(cell) {
   }
 }
 
+function launchConfetti() {
+  document.querySelector(".confetti")?.remove();
+
+  const colors = ["#ef4444", "#facc15", "#22c55e", "#3b82f6", "#a855f7"];
+  const confetti = document.createElement("div");
+  confetti.className = "confetti";
+  confetti.setAttribute("aria-hidden", "true");
+
+  for (let index = 0; index < 100; index += 1) {
+    const particle = document.createElement("span");
+    particle.style.left = `${Math.random() * 100}%`;
+    particle.style.backgroundColor = colors[index % colors.length];
+    particle.style.animationDelay = `${Math.random() * 0.8}s`;
+    particle.style.animationDuration = `${2.5 + Math.random() * 2}s`;
+    particle.style.setProperty("--drift", `${Math.random() * 30 - 15}vw`);
+    particle.style.setProperty("--spin", `${Math.random() * 720 - 360}deg`);
+    confetti.append(particle);
+  }
+
+  document.body.append(confetti);
+  window.setTimeout(() => confetti.remove(), 5000);
+}
+
+function checkForWinner() {
+  const opponent = currentPlayer === "black" ? "white" : "black";
+  const opponentPieces = board.querySelectorAll(`.piece--${opponent}`);
+
+  if (opponentPieces.length > 0) {
+    return false;
+  }
+
+  const winner = currentPlayer[0].toUpperCase() + currentPlayer.slice(1);
+  selectedCell?.classList.remove("cell--selected");
+  selectedCell = null;
+  mustContinueJump = false;
+  gameOver = true;
+  status.textContent = `${winner} wins!`;
+  launchConfetti();
+  return true;
+}
+
 function finishTurn() {
   selectedCell?.classList.remove("cell--selected");
   selectedCell = null;
@@ -175,6 +217,10 @@ function moveSelectedPiece(destination, capturedCell = null) {
   updateCellLabel(origin);
   updateCellLabel(destination);
 
+  if (capturedCell && checkForWinner()) {
+    return;
+  }
+
   if (capturedCell && getJumpOptions(destination).length > 0) {
     selectedCell = destination;
     selectedCell.classList.add("cell--selected");
@@ -187,6 +233,10 @@ function moveSelectedPiece(destination, capturedCell = null) {
 }
 
 function handleBoardClick(event) {
+  if (gameOver) {
+    return;
+  }
+
   const cell = event.target.closest(".cell");
 
   if (!cell) {
@@ -243,6 +293,8 @@ function createBoard() {
   currentPlayer = "black";
   selectedCell = null;
   mustContinueJump = false;
+  gameOver = false;
+  document.querySelector(".confetti")?.remove();
 
   for (let index = 0; index < BOARD_SIZE; index += 1) {
     const row = Math.floor(index / BOARD_COLS);

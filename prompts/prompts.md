@@ -156,3 +156,17 @@ Now create a full rules list on how to play the game
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:39
+
+**User prompt:**
+
+You win the game if you capture all the oponent's pieces.
+Add this to the game and the rules list
+Note: When you win, there should be confetti
+
+**Images or references:**
+
+None provided
