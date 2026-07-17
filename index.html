@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>King in the North — Checkers</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1 class="title"><span class="crown">👑</span> King in the North</h1>
+      <p class="subtitle">A classic 8×8 checkers duel — capture, crown, and claim the throne.</p>
+    </header>
+
+    <main class="game">
+      <!-- Board -->
+      <section class="board-stage">
+        <div class="turn-banner">
+          <div class="turn-left">
+            <span class="turn-dot" id="turnDot"></span>
+            <span id="turnText">Black to move</span>
+          </div>
+          <span class="forced-flag" id="forcedFlag" hidden>⚔ Capture forced!</span>
+        </div>
+
+        <div class="board-frame">
+          <div class="board" id="board" role="grid" aria-label="Checkers board"></div>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn small ghost" id="soundBtn" title="Toggle sound">🔊 Sound: On</button>
+          <button class="btn small ghost" id="howtoBtn2">📖 How to Play</button>
+        </div>
+      </section>
+
+      <!-- Side panel -->
+      <aside class="panel">
+        <h2>Scoreboard</h2>
+        <div class="scoreboard" id="scoreboard">
+          <div class="player-card" id="card1">
+            <span class="pc-chip" id="chip1"></span>
+            <div>
+              <div class="pc-name">Player 1</div>
+              <div class="pc-color" id="color1">—</div>
+            </div>
+            <div class="pc-stats">
+              <div class="pts" id="pts1">0</div>
+              <div class="streak" id="streak1">streak 0</div>
+            </div>
+          </div>
+          <div class="player-card" id="card2">
+            <span class="pc-chip" id="chip2"></span>
+            <div>
+              <div class="pc-name">Player 2</div>
+              <div class="pc-color" id="color2">—</div>
+            </div>
+            <div class="pc-stats">
+              <div class="pts" id="pts2">0</div>
+              <div class="streak" id="streak2">streak 0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pieces-left">
+          <span>Black remaining: <b id="blackLeft">12</b></span>
+          <span>White remaining: <b id="whiteLeft">12</b></span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn primary wide" id="newGameBtn">🎲 New Game (Toss)</button>
+          <button class="btn" id="howtoBtn">📖 How to Play</button>
+          <button class="btn ghost" id="resetScoresBtn">♻ Reset Scores</button>
+        </div>
+
+        <div class="persistence-note">
+          <span class="dot-i">●</span>
+          <span>Points &amp; streaks are <b>saved on this device</b> (localStorage) — they persist across reloads until you reset them.</span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn ghost small wide" id="undoInfo" disabled title="Local 2-player hot-seat">👥 Local 2-player hot-seat</button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Coin toss modal -->
+  <div class="overlay" id="tossOverlay">
+    <div class="modal toss-modal">
+      <h2>Coin Toss</h2>
+      <p class="rules">Heads → <b>Player 1</b> gets Black · Tails → <b>Player 2</b> gets Black.<br>Black always moves first.</p>
+      <div class="coin-stage">
+        <div class="coin" id="coin">
+          <div class="coin-face heads">H</div>
+          <div class="coin-face tails">T</div>
+        </div>
+      </div>
+      <div class="toss-result" id="tossResult"></div>
+      <div class="toss-sub" id="tossSub"></div>
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn primary" id="flipBtn">Flip the Coin</button>
+        <button class="btn" id="startBtn" disabled>Start Game</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to play modal -->
+  <div class="overlay" id="howtoOverlay" hidden>
+    <div class="modal">
+      <button class="close-x" data-close="howtoOverlay" aria-label="Close">✕</button>
+      <h2>📖 How to Play</h2>
+      <div class="rules">
+        <h3>🎯 Goal</h3>
+        <p>Be the last commander standing. You win when you <span class="key">capture all</span> opponent pieces, or leave them with <span class="key">no legal move</span>.</p>
+
+        <h3>🪙 The Toss</h3>
+        <p>A coin toss decides who plays <span class="key">Black</span>. Black always moves first.</p>
+
+        <h3>♟ Moving Men</h3>
+        <ul>
+          <li>Pieces live only on the <span class="key">dark squares</span>.</li>
+          <li>A man moves <span class="key">diagonally forward</span> one square to an empty dark square.</li>
+          <li>Men cannot move backward or sideways.</li>
+        </ul>
+
+        <h3>⚔ Capturing</h3>
+        <ul>
+          <li>Jump diagonally over an adjacent enemy onto the empty square just beyond it.</li>
+          <li><span class="key">Captures are forced</span> — if a jump is available you must take it.</li>
+          <li><span class="key">Multi-jumps:</span> if another capture is possible from the landing square, you must keep jumping in the same turn.</li>
+        </ul>
+
+        <h3>👑 Kinging</h3>
+        <ul>
+          <li>Reach the opponent's back row and your man is <span class="key">crowned a King</span>.</li>
+          <li>Kings move and capture <span class="key">forward and backward</span>, one square at a time.</li>
+          <li>Being crowned mid-jump ends your turn.</li>
+        </ul>
+
+        <h3>🏆 Winning</h3>
+        <ul>
+          <li>Capture every enemy piece, or block them so they have no legal move.</li>
+        </ul>
+
+        <h3>🎨 On-board Cues</h3>
+        <ul>
+          <li><span class="key">Blue ring</span> = selected piece · <span class="key">Blue dot</span> = valid move.</li>
+          <li><span class="key">Gold ring</span> = a piece that must capture · <span class="key">Red ring</span> = capture landing square.</li>
+          <li><span class="key">Gold outline</span> = last move played.</li>
+        </ul>
+      </div>
+      <div class="btn-row" style="margin-top:18px;">
+        <button class="btn primary wide" data-close="howtoOverlay">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game over modal -->
+  <div class="overlay" id="resultOverlay" hidden>
+    <div class="modal result-modal">
+      <div class="result-crown">🎉👑🎉</div>
+      <div class="result-win">King in the North</div>
+      <div class="result-winner-name">(John Snow)</div>
+      <div class="result-attr" id="winnerAttr"></div>
+      <div class="result-lose" id="loserLine">Fallen Kingdom Boom....</div>
+      <div class="btn-row" style="margin-top:22px;">
+        <button class="btn primary" id="rematchBtn">🔁 Rematch (Toss)</button>
+        <button class="btn" id="closeResultBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti" hidden></canvas>
+  <div class="toast" id="toast"></div>
+
+  <script src="engine.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>

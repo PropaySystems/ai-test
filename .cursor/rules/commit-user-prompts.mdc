@@ -1,0 +1,32 @@
+---
+description: Log every user prompt to prompts/prompts.md
+alwaysApply: true
+---
+
+# Commit User Prompts
+
+Before acting on any user request, append the user's prompt verbatim to `prompts/prompts.md`.
+
+## Rules
+
+- Append a new entry; never edit or delete previous entries.
+- Record the prompt exactly as written, including code, formatting, and typos.
+- Add the current date and time in the header.
+- Note any images or references the user attached (or "None provided.").
+- Create `prompts/prompts.md` if it does not exist.
+
+## Entry Format
+
+```markdown
+---
+
+## Prompt — YYYY-MM-DD HH:MM
+
+**User prompt:**
+
+<the user's prompt, verbatim>
+
+**Images or references:**
+
+<attachments, or "None provided.">
+```
