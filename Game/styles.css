@@ -53,6 +53,25 @@ body {
   outline-offset: -2px;
 }
 
+.piece {
+  width: 72%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 0.25rem rgb(255 255 255 / 15%),
+    0 0.2rem 0.3rem rgb(0 0 0 / 35%);
+}
+
+.piece--black {
+  border: 0.15rem solid #000000;
+  background: #222222;
+}
+
+.piece--white {
+  border: 0.15rem solid #d1d5db;
+  background: #ffffff;
+}
+
 #reset-button {
   padding: 0.75rem 1.25rem;
   border: 0;

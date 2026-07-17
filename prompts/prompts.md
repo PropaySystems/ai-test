@@ -12,6 +12,21 @@ None provided
 
 ---
 
+## Prompt — 2026-07-17 10:20
+
+**User prompt:**
+
+This game will be played with 2 players
+
+Each player will have 12 pieces (24 in total)
+One player's pieces will be black and the other will be white
+
+**Images or references:**
+
+None provided
+
+---
+
 ## Prompt — 2026-07-17 10:15
 
 **User prompt:**
