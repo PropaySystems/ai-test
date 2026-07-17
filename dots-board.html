@@ -184,6 +184,10 @@
     }
 
     .dot {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 58%;
       height: 58%;
       border-radius: 50%;
@@ -197,8 +201,30 @@
     .dot.p1 { background: var(--p1); }
     .dot.p2 { background: var(--p2); }
 
+    .dot.king {
+      box-shadow:
+        inset 0 -3px 6px rgba(0, 0, 0, 0.35),
+        0 0 0 3px #d4af37,
+        0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .dot.king::after {
+      content: "♔";
+      position: absolute;
+      font-size: 0.7em;
+      line-height: 1;
+      color: #1a1a1a;
+      pointer-events: none;
+    }
+
+    .dot.p2.king::after { color: #fff; }
+
     .dot:hover { transform: scale(1.08); }
     .square.selected .dot { transform: scale(1.12); }
+
+    .square.valid.capture {
+      box-shadow: inset 0 0 0 999px rgba(230, 57, 70, 0.4);
+    }
 
     .rules {
       color: var(--muted);
@@ -231,8 +257,8 @@
 <body>
   <h1>Dots <span>Board</span></h1>
   <p class="subtitle">
-    Two players, 12 dots each. Move one step diagonally on black squares only.
-    Capture by landing on an opponent. Player 2 uses red (color was not specified).
+    Two players, 12 dots each on black squares. Men move diagonally forward;
+    kings move diagonally both ways. Capture by jumping over an enemy onto the empty black square behind it.
   </p>
 
   <div id="setup" class="panel setup">
@@ -267,14 +293,14 @@
   </div>
 
   <p class="rules">
-    Click your dot, then click a highlighted black square one diagonal step away.
-    Dots stay on black blocks only. You may move onto an empty square or capture an enemy dot.
-    Win by capturing all 12 of the opponent's dots, or when they have no legal moves.
+    Men move one diagonal step forward on black squares. Kings (gold ring) move diagonally forward or back.
+    To capture, jump over an enemy dot onto the empty black square right behind it — you may chain jumps.
+    Reach the far row to become a king. Win by capturing all enemy dots or leaving them with no moves.
   </p>
 
   <script>
     const SIZE = 8;
-    const EMPTY = 0;
+    const EMPTY = null;
     const P1 = 1;
     const P2 = 2;
 
@@ -294,26 +320,29 @@
     let selected = null;
     let gameOver = false;
     let started = false;
+    /** When set, this piece must continue jumping */
+    let mustContinue = null;
+
+    function piece(owner, king = false) {
+      return { owner, king };
+    }
 
     function createInitialBoard() {
       const b = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
-      // 12 dots each, draughts-style: dark squares of first/last 3 rows
-      // Dark squares where (r + c) is odd, matching black tiles in our coloring
       for (let r = 0; r < 3; r++) {
         for (let c = 0; c < SIZE; c++) {
-          if ((r + c) % 2 === 1) b[r][c] = P2;
+          if ((r + c) % 2 === 1) b[r][c] = piece(P2);
         }
       }
       for (let r = 5; r < 8; r++) {
         for (let c = 0; c < SIZE; c++) {
-          if ((r + c) % 2 === 1) b[r][c] = P1;
+          if ((r + c) % 2 === 1) b[r][c] = piece(P1);
         }
       }
       return b;
     }
 
     function squareColor(r, c) {
-      // Top-left is blue; alternate blue / black
       return (r + c) % 2 === 0 ? "blue" : "black";
     }
 
@@ -325,31 +354,62 @@
       return squareColor(r, c) === "black";
     }
 
-    /** One step on black only: diagonal (black → black) */
-    function getMoves(r, c, player) {
-      const moves = [];
-      const dirs = [
-        [-1, -1],
-        [-1, 1],
-        [1, -1],
-        [1, 1],
+    /** P1 advances upward (smaller row); P2 advances downward */
+    function moveDirs(p) {
+      if (p.king) {
+        return [
+          [-1, -1],
+          [-1, 1],
+          [1, -1],
+          [1, 1],
+        ];
+      }
+      const fwd = p.owner === P1 ? -1 : 1;
+      return [
+        [fwd, -1],
+        [fwd, 1],
       ];
-      for (const [dr, dc] of dirs) {
+    }
+
+    function getCaptures(r, c) {
+      const p = board[r][c];
+      if (!p) return [];
+      const captures = [];
+      for (const [dr, dc] of moveDirs(p)) {
+        const mr = r + dr;
+        const mc = c + dc;
+        const lr = r + dr * 2;
+        const lc = c + dc * 2;
+        if (!inBounds(mr, mc) || !inBounds(lr, lc)) continue;
+        if (!isBlackSquare(lr, lc)) continue;
+        const mid = board[mr][mc];
+        if (mid && mid.owner !== p.owner && board[lr][lc] === EMPTY) {
+          captures.push({ r: lr, c: lc, captureR: mr, captureC: mc });
+        }
+      }
+      return captures;
+    }
+
+    function getQuietMoves(r, c) {
+      const p = board[r][c];
+      if (!p) return [];
+      const moves = [];
+      for (const [dr, dc] of moveDirs(p)) {
         const nr = r + dr;
         const nc = c + dc;
         if (!inBounds(nr, nc) || !isBlackSquare(nr, nc)) continue;
-        const cell = board[nr][nc];
-        if (cell === EMPTY || cell !== player) {
-          moves.push([nr, nc]);
+        if (board[nr][nc] === EMPTY) {
+          moves.push({ r: nr, c: nc, captureR: null, captureC: null });
         }
       }
       return moves;
     }
 
-    function hasAnyMove(player) {
+    function playerHasCapture(player) {
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
-          if (board[r][c] === player && getMoves(r, c, player).length > 0) {
+          const p = board[r][c];
+          if (p && p.owner === player && getCaptures(r, c).length > 0) {
             return true;
           }
         }
@@ -357,14 +417,55 @@
       return false;
     }
 
+    /** Legal destinations for a piece; captures preferred when any exist for the player */
+    function getMoves(r, c) {
+      const p = board[r][c];
+      if (!p || p.owner !== current) return [];
+      if (mustContinue) {
+        if (mustContinue.r !== r || mustContinue.c !== c) return [];
+        return getCaptures(r, c);
+      }
+      const captures = getCaptures(r, c);
+      if (playerHasCapture(current)) {
+        return captures;
+      }
+      return getQuietMoves(r, c);
+    }
+
+    function hasAnyMove(player) {
+      const saved = current;
+      current = player;
+      let ok = false;
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const p = board[r][c];
+          if (!p || p.owner !== player) continue;
+          if (getCaptures(r, c).length || getQuietMoves(r, c).length) {
+            ok = true;
+            break;
+          }
+        }
+        if (ok) break;
+      }
+      current = saved;
+      return ok;
+    }
+
     function countPieces(player) {
       let n = 0;
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
-          if (board[r][c] === player) n++;
+          if (board[r][c] && board[r][c].owner === player) n++;
         }
       }
       return n;
+    }
+
+    function maybePromote(r, c) {
+      const p = board[r][c];
+      if (!p || p.king) return;
+      if (p.owner === P1 && r === 0) p.king = true;
+      if (p.owner === P2 && r === SIZE - 1) p.king = true;
     }
 
     function playerName(p) {
@@ -385,6 +486,7 @@
     function endGame(winner) {
       gameOver = true;
       selected = null;
+      mustContinue = null;
       winnerTextEl.textContent = `${playerName(winner)} wins!`;
       overlayEl.classList.remove("hidden");
       statusEl.innerHTML = `<strong>${playerName(winner)}</strong> wins!`;
@@ -397,17 +499,17 @@
       scoreP1El.classList.toggle("active", !gameOver && current === P1);
       scoreP2El.classList.toggle("active", !gameOver && current === P2);
       if (!gameOver) {
-        statusEl.innerHTML = `<strong>${playerName(current)}</strong>'s turn`;
+        const extra = mustContinue ? " — keep jumping!" : "";
+        statusEl.innerHTML = `<strong>${playerName(current)}</strong>'s turn${extra}`;
       }
     }
 
     function render() {
       boardEl.innerHTML = "";
-      const validSet = new Set();
-      if (selected && !gameOver) {
-        const moves = getMoves(selected.r, selected.c, current);
-        for (const [r, c] of moves) validSet.add(`${r},${c}`);
-      }
+      const validMoves = selected && !gameOver ? getMoves(selected.r, selected.c) : [];
+      const validMap = new Map(
+        validMoves.map((m) => [`${m.r},${m.c}`, m])
+      );
 
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
@@ -419,19 +521,22 @@
           if (selected && selected.r === r && selected.c === c) {
             sq.classList.add("selected");
           }
-          if (validSet.has(`${r},${c}`)) {
+          const move = validMap.get(`${r},${c}`);
+          if (move) {
             sq.classList.add("valid");
+            if (move.captureR !== null) sq.classList.add("capture");
           }
 
-          const piece = board[r][c];
-          if (piece !== EMPTY) {
+          const p = board[r][c];
+          if (p) {
             const dot = document.createElement("div");
-            dot.className = `dot ${piece === P1 ? "p1" : "p2"}`;
+            const who = p.owner === P1 ? "p1" : "p2";
+            dot.className = `dot ${who}${p.king ? " king" : ""}`;
             dot.setAttribute("role", "button");
-            dot.setAttribute(
-              "aria-label",
-              piece === P1 ? "Player 1 dot" : "Player 2 dot"
-            );
+            const label =
+              (p.owner === P1 ? "Player 1" : "Player 2") +
+              (p.king ? " king" : " dot");
+            dot.setAttribute("aria-label", label);
             sq.appendChild(dot);
           }
 
@@ -442,33 +547,63 @@
       updateStatus();
     }
 
+    function endTurn() {
+      mustContinue = null;
+      selected = null;
+      current = current === P1 ? P2 : P1;
+      render();
+      const winner = checkEnd();
+      if (winner) endGame(winner);
+    }
+
     function onSquareClick(r, c) {
       if (!started || gameOver) return;
 
-      const piece = board[r][c];
+      const cell = board[r][c];
 
       if (selected) {
-        const moves = getMoves(selected.r, selected.c, current);
-        const isMove = moves.some(([mr, mc]) => mr === r && mc === c);
-        if (isMove) {
-          board[r][c] = current;
+        const moves = getMoves(selected.r, selected.c);
+        const move = moves.find((m) => m.r === r && m.c === c);
+        if (move) {
+          const moving = board[selected.r][selected.c];
+          board[r][c] = moving;
           board[selected.r][selected.c] = EMPTY;
-          selected = null;
-          current = current === P1 ? P2 : P1;
-          render();
-          const winner = checkEnd();
-          if (winner) endGame(winner);
+          if (move.captureR !== null) {
+            board[move.captureR][move.captureC] = EMPTY;
+          }
+          maybePromote(r, c);
+
+          const further = getCaptures(r, c);
+          if (move.captureR !== null && further.length > 0) {
+            mustContinue = { r, c };
+            selected = { r, c };
+            render();
+            return;
+          }
+          endTurn();
           return;
         }
-        // Click same piece: deselect
-        if (selected.r === r && selected.c === c) {
+
+        if (
+          !mustContinue &&
+          selected.r === r &&
+          selected.c === c
+        ) {
           selected = null;
           render();
           return;
         }
       }
 
-      if (piece === current) {
+      if (mustContinue) {
+        if (r === mustContinue.r && c === mustContinue.c) {
+          selected = { r, c };
+          render();
+        }
+        return;
+      }
+
+      if (cell && cell.owner === current) {
         selected = { r, c };
         render();
       } else {
@@ -481,6 +616,7 @@
       board = createInitialBoard();
       current = firstPlayer;
       selected = null;
+      mustContinue = null;
       gameOver = false;
       started = true;
       setupEl.classList.add("hidden");
@@ -493,6 +629,7 @@
       started = false;
       gameOver = false;
       selected = null;
+      mustContinue = null;
       setupEl.classList.remove("hidden");
       gameUiEl.classList.add("hidden");
       overlayEl.classList.add("hidden");
@@ -505,7 +642,6 @@
     document.getElementById("restart").addEventListener("click", showSetup);
     document.getElementById("play-again").addEventListener("click", showSetup);
 
-    // Preview board before start
     board = createInitialBoard();
     render();
   </script>

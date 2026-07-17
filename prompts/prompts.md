@@ -53,3 +53,15 @@ The dots should move on black blocks only
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:50
+
+**User prompt:**
+
+in order to eliminate the opposite player's dot I have to skip their dot left a empty black spot right behined it. only the king can move back an forward (in a diagonal manner).
+
+**Images or references:**
+
+None provided
