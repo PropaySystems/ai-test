@@ -194,3 +194,15 @@ Add a rules button that will show the players the rules
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:54
+
+**User prompt:**
+
+Add a confeti button that will trigger the confeti
+
+**Images or references:**
+
+None provided

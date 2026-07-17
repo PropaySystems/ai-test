@@ -121,6 +121,14 @@ body {
   background: #334155;
 }
 
+#confetti-button {
+  background: #db2777;
+}
+
+#confetti-button:hover {
+  background: #be185d;
+}
+
 .rules-dialog {
   width: min(90vw, 40rem);
   max-height: min(85vh, 40rem);

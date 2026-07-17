@@ -1,6 +1,7 @@
 const board = document.querySelector("#board");
 const resetButton = document.querySelector("#reset-button");
 const rulesButton = document.querySelector("#rules-button");
+const confettiButton = document.querySelector("#confetti-button");
 const rulesCloseButton = document.querySelector("#rules-close-button");
 const rulesDialog = document.querySelector("#rules-dialog");
 const status = document.querySelector("#status");
@@ -363,6 +364,7 @@ function createBoard() {
 
 board.addEventListener("click", handleBoardClick);
 resetButton.addEventListener("click", createBoard);
+confettiButton.addEventListener("click", launchConfetti);
 rulesButton.addEventListener("click", () => rulesDialog.showModal());
 rulesCloseButton.addEventListener("click", () => rulesDialog.close());
 rulesDialog.addEventListener("click", (event) => {
