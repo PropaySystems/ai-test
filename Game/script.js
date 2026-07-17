@@ -5,6 +5,8 @@ const status = document.querySelector("#status");
 const BOARD_ROWS = 8;
 const BOARD_COLS = 8;
 const BOARD_SIZE = BOARD_ROWS * BOARD_COLS;
+let currentPlayer = "black";
+let selectedCell = null;
 
 function getPieceColor(row, isDark) {
   if (!isDark) {
@@ -22,8 +24,67 @@ function getPieceColor(row, isDark) {
   return null;
 }
 
+function updateStatus() {
+  const playerName = currentPlayer[0].toUpperCase() + currentPlayer.slice(1);
+  status.textContent = `${playerName}'s turn`;
+}
+
+function updateCellLabel(cell) {
+  const index = Number(cell.dataset.index);
+  const row = Math.floor(index / BOARD_COLS);
+  const col = index % BOARD_COLS;
+  const piece = cell.querySelector(".piece");
+  const pieceDescription = piece ? `${piece.dataset.color} piece, ` : "";
+
+  cell.setAttribute(
+    "aria-label",
+    `${pieceDescription}row ${row + 1}, column ${col + 1}`,
+  );
+}
+
+function selectCell(cell) {
+  selectedCell?.classList.remove("cell--selected");
+  selectedCell = cell;
+  selectedCell.classList.add("cell--selected");
+}
+
+function moveSelectedPiece(destination) {
+  destination.append(selectedCell.querySelector(".piece"));
+  selectedCell.classList.remove("cell--selected");
+  updateCellLabel(selectedCell);
+  updateCellLabel(destination);
+  selectedCell = null;
+  currentPlayer = currentPlayer === "black" ? "white" : "black";
+  updateStatus();
+}
+
+function handleBoardClick(event) {
+  const cell = event.target.closest(".cell");
+
+  if (!cell) {
+    return;
+  }
+
+  const piece = cell.querySelector(".piece");
+
+  if (piece?.dataset.color === currentPlayer) {
+    selectCell(cell);
+    return;
+  }
+
+  if (
+    selectedCell &&
+    !piece &&
+    cell.classList.contains("cell--dark")
+  ) {
+    moveSelectedPiece(cell);
+  }
+}
+
 function createBoard() {
   board.replaceChildren();
+  currentPlayer = "black";
+  selectedCell = null;
 
   for (let index = 0; index < BOARD_SIZE; index += 1) {
     const row = Math.floor(index / BOARD_COLS);
@@ -35,10 +96,6 @@ function createBoard() {
     cell.className = `cell ${isDark ? "cell--dark" : "cell--light"}`;
     cell.type = "button";
     cell.dataset.index = index;
-    cell.setAttribute(
-      "aria-label",
-      `${pieceColor ? `${pieceColor} piece, ` : ""}row ${row + 1}, column ${col + 1}`,
-    );
 
     if (pieceColor) {
       const piece = document.createElement("span");
@@ -47,12 +104,14 @@ function createBoard() {
       cell.append(piece);
     }
 
+    updateCellLabel(cell);
     board.append(cell);
   }
 
-  status.textContent = "Black: 12 pieces · White: 12 pieces";
+  updateStatus();
 }
 
+board.addEventListener("click", handleBoardClick);
 resetButton.addEventListener("click", createBoard);
 
 createBoard();

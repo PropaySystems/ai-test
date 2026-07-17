@@ -56,6 +56,11 @@ body {
   outline-offset: -2px;
 }
 
+.cell--selected {
+  outline: 0.25rem solid #facc15;
+  outline-offset: -0.25rem;
+}
+
 .piece {
   width: 72%;
   aspect-ratio: 1;

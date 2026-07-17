@@ -74,3 +74,15 @@ The two open rows in the middle are now smaller the the other rows
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:22
+
+**User prompt:**
+
+Now we need to track whose turn it is to move their pieces
+
+**Images or references:**
+
+None provided
