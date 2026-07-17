@@ -129,3 +129,16 @@ The "a jump is required" rule should not check for backwards jumps
 **Images or references:**
 
 None provided
+
+---
+
+## Prompt — 2026-07-17 10:33
+
+**User prompt:**
+
+When a player's piece reaches the last row, it should be turned into a "KING" peice.
+These pieces can move forward and backwards
+
+**Images or references:**
+
+None provided

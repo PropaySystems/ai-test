@@ -52,12 +52,32 @@ function getCell(row, col) {
 function updateCellLabel(cell) {
   const { row, col } = getCoordinates(cell);
   const piece = cell.querySelector(".piece");
-  const pieceDescription = piece ? `${piece.dataset.color} piece, ` : "";
+  const pieceDescription = piece
+    ? `${piece.classList.contains("piece--king") ? "king " : ""}${piece.dataset.color} piece, `
+    : "";
 
   cell.setAttribute(
     "aria-label",
     `${pieceDescription}row ${row + 1}, column ${col + 1}`,
   );
+}
+
+function getMovementDirections(piece) {
+  const forwardDirection = piece.dataset.color === "black" ? 1 : -1;
+  const forwardDirections = [
+    [forwardDirection, -1],
+    [forwardDirection, 1],
+  ];
+
+  if (!piece.classList.contains("piece--king")) {
+    return forwardDirections;
+  }
+
+  return [
+    ...forwardDirections,
+    [-forwardDirection, -1],
+    [-forwardDirection, 1],
+  ];
 }
 
 function getJumpOptions(cell) {
@@ -68,11 +88,7 @@ function getJumpOptions(cell) {
   }
 
   const { row, col } = getCoordinates(cell);
-  const forwardDirection = piece.dataset.color === "black" ? 1 : -1;
-  const directions = [
-    [forwardDirection, -1],
-    [forwardDirection, 1],
-  ];
+  const directions = getMovementDirections(piece);
 
   return directions.flatMap(([rowDirection, colDirection]) => {
     const capturedCell = getCell(row + rowDirection, col + colDirection);
@@ -115,11 +131,26 @@ function selectCell(cell) {
 function isDiagonalMove(origin, destination) {
   const originCoordinates = getCoordinates(origin);
   const destinationCoordinates = getCoordinates(destination);
+  const piece = origin.querySelector(".piece");
+  const rowChange = destinationCoordinates.row - originCoordinates.row;
+  const colChange = destinationCoordinates.col - originCoordinates.col;
+  const allowedDirections = getMovementDirections(piece);
 
-  return (
-    Math.abs(destinationCoordinates.row - originCoordinates.row) === 1 &&
-    Math.abs(destinationCoordinates.col - originCoordinates.col) === 1
+  return allowedDirections.some(
+    ([rowDirection, colDirection]) =>
+      rowChange === rowDirection && colChange === colDirection,
   );
+}
+
+function promotePiece(cell) {
+  const piece = cell.querySelector(".piece");
+  const { row } = getCoordinates(cell);
+  const promotionRow = piece.dataset.color === "black" ? BOARD_ROWS - 1 : 0;
+
+  if (row === promotionRow && !piece.classList.contains("piece--king")) {
+    piece.classList.add("piece--king");
+    piece.textContent = "KING";
+  }
 }
 
 function finishTurn() {
@@ -134,6 +165,7 @@ function moveSelectedPiece(destination, capturedCell = null) {
   const origin = selectedCell;
   destination.append(selectedCell.querySelector(".piece"));
   origin.classList.remove("cell--selected");
+  promotePiece(destination);
 
   if (capturedCell) {
     capturedCell.querySelector(".piece").remove();
