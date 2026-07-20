@@ -36,8 +36,8 @@ class TodoTest extends TestCase
         $this->actingAs($user);
 
         Livewire::test(Index::class)
-            ->set('title', 'Buy groceries')
-            ->set('description', 'Milk, eggs, bread')
+            ->set('form.title', 'Buy groceries')
+            ->set('form.description', 'Milk, eggs, bread')
             ->call('createTodo')
             ->assertHasNoErrors();
 
@@ -80,8 +80,8 @@ class TodoTest extends TestCase
 
         Livewire::test(Index::class)
             ->call('startEditing', $todo->id)
-            ->set('editTitle', 'New title')
-            ->set('editDescription', 'New description')
+            ->set('editForm.title', 'New title')
+            ->set('editForm.description', 'New description')
             ->call('updateTodo')
             ->assertHasNoErrors();
 

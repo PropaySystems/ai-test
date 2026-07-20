@@ -8,7 +8,7 @@
         <flux:heading size="lg">{{ __('New todo') }}</flux:heading>
 
         <flux:input
-            wire:model="title"
+            wire:model="form.title"
             :label="__('Title')"
             type="text"
             required
@@ -17,7 +17,7 @@
         />
 
         <flux:textarea
-            wire:model="description"
+            wire:model="form.description"
             :label="__('Description')"
             rows="3"
             placeholder="{{ __('Optional details…') }}"
@@ -105,14 +105,14 @@
             </div>
 
             <flux:input
-                wire:model="editTitle"
+                wire:model="editForm.title"
                 :label="__('Title')"
                 type="text"
                 required
             />
 
             <flux:textarea
-                wire:model="editDescription"
+                wire:model="editForm.description"
                 :label="__('Description')"
                 rows="3"
             />

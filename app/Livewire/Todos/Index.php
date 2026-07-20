@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Todos;
 
+use App\Livewire\Forms\TodoForm;
 use App\Models\Todo;
+use App\Services\TodoService;
 use Flux\Flux;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -13,33 +14,27 @@ use Livewire\Component;
 #[Title('Todos')]
 class Index extends Component
 {
-    public string $title = '';
+    public TodoForm $form;
 
-    public string $description = '';
+    public TodoForm $editForm;
 
     public ?int $editingTodoId = null;
 
-    public string $editTitle = '';
+    private TodoService $todoService;
 
-    public string $editDescription = '';
+    public function boot(TodoService $todoService): void
+    {
+        $this->todoService = $todoService;
+    }
 
     /**
      * Create a new todo for the authenticated user.
      */
     public function createTodo(): void
     {
-        $validated = $this->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:5000'],
-        ]);
+        $this->todoService->create($this->form->todoData());
 
-        Auth::user()->todos()->create([
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?: null,
-            'completed' => false,
-        ]);
-
-        $this->reset('title', 'description');
+        $this->form->reset();
 
         Flux::toast(variant: 'success', text: __('Todo created.'));
     }
@@ -49,11 +44,10 @@ class Index extends Component
      */
     public function startEditing(int $id): void
     {
-        $todo = $this->findOwnedTodo($id);
+        $todo = $this->todoService->findOwnedOrFail($id);
 
         $this->editingTodoId = $todo->id;
-        $this->editTitle = $todo->title;
-        $this->editDescription = $todo->description ?? '';
+        $this->editForm->fillFromTodo($todo);
 
         $this->modal('edit-todo')->show();
     }
@@ -63,17 +57,11 @@ class Index extends Component
      */
     public function updateTodo(): void
     {
-        $validated = $this->validate([
-            'editTitle' => ['required', 'string', 'max:255'],
-            'editDescription' => ['nullable', 'string', 'max:5000'],
-        ]);
+        if ($this->editingTodoId === null) {
+            return;
+        }
 
-        $todo = $this->findOwnedTodo($this->editingTodoId);
-
-        $todo->update([
-            'title' => $validated['editTitle'],
-            'description' => $validated['editDescription'] ?: null,
-        ]);
+        $this->todoService->update($this->editingTodoId, $this->editForm->todoData());
 
         $this->cancelEditing();
 
@@ -85,8 +73,9 @@ class Index extends Component
      */
     public function cancelEditing(): void
     {
-        $this->reset('editingTodoId', 'editTitle', 'editDescription');
-        $this->resetValidation(['editTitle', 'editDescription']);
+        $this->reset('editingTodoId');
+        $this->editForm->reset();
+        $this->editForm->resetValidation();
 
         $this->modal('edit-todo')->close();
     }
@@ -96,11 +85,7 @@ class Index extends Component
      */
     public function toggleComplete(int $id): void
     {
-        $todo = $this->findOwnedTodo($id);
-
-        $todo->update([
-            'completed' => ! $todo->completed,
-        ]);
+        $this->todoService->toggleComplete($id);
     }
 
     /**
@@ -108,7 +93,7 @@ class Index extends Component
      */
     public function deleteTodo(int $id): void
     {
-        $this->findOwnedTodo($id)->delete();
+        $this->todoService->delete($id);
 
         Flux::toast(variant: 'success', text: __('Todo deleted.'));
     }
@@ -119,15 +104,7 @@ class Index extends Component
     #[Computed]
     public function todos(): Collection
     {
-        return Auth::user()->todos()->latest()->get();
-    }
-
-    /**
-     * Resolve a todo that belongs to the authenticated user.
-     */
-    private function findOwnedTodo(?int $id): Todo
-    {
-        return Auth::user()->todos()->findOrFail($id);
+        return $this->todoService->listForCurrentUser();
     }
 
     public function render()
