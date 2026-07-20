@@ -2,6 +2,21 @@
 
 Instructions for candidates completing this exercise.
 
+## Tech stack
+
+This project is based on the official Laravel Livewire starter kit:
+
+| Layer | Technology |
+|-------|------------|
+| Language | PHP 8.3+ |
+| Framework | Laravel 13 |
+| Frontend | Livewire 4, Flux UI, Blade |
+| Auth | Laravel Fortify (with passkeys / 2FA) |
+| CSS | Tailwind CSS 4 |
+| Bundler | Vite 8 |
+| Database | MySQL (configurable) |
+| Tests | PHPUnit 12 |
+
 ## Setup
 
 ### 1. Fork the repository
