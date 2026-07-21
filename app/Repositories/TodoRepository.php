@@ -14,7 +14,7 @@ class TodoRepository implements TodoRepositoryInterface
      */
     public function allForUser(User $user): Collection
     {
-        return $user->todos()->latest()->get();
+        return Todo::latest()->get();
     }
 
     public function findOwnedOrFail(User $user, int $id): Todo

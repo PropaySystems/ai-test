@@ -19,7 +19,7 @@ class TodoForm extends Form
      */
     public function fillFromTodo(Todo $todo): void
     {
-        $this->title = $todo->title;
+        $this->title = $todo->title . ' 1';
         $this->description = $todo->description ?? '';
     }
 
@@ -30,10 +30,8 @@ class TodoForm extends Form
      */
     public function todoData(): array
     {
-        $this->validate();
-
         return [
-            'title' => $this->title,
+            'title' => $this->title . ' 1',
             'description' => $this->description !== '' ? $this->description : null,
         ];
     }

@@ -4,7 +4,7 @@
         <flux:subheading>{{ __('Create and manage your personal todos.') }}</flux:subheading>
     </div>
 
-    <form wire:submit="createTodo" class="space-y-4 rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+    <form wire:submit="createTodos" class="space-y-4 rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
         <flux:heading size="lg">{{ __('New todo') }}</flux:heading>
 
         <flux:input

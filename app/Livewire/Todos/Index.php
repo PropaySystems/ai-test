@@ -7,6 +7,7 @@ use App\Models\Todo;
 use App\Services\TodoService;
 use Flux\Flux;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -25,6 +26,8 @@ class Index extends Component
     public function boot(TodoService $todoService): void
     {
         $this->todoService = $todoService;
+
+        Log::error('Todo sync worker failed: unable to reach queue.todos-priority (connection refused)');
     }
 
     /**
@@ -48,8 +51,6 @@ class Index extends Component
 
         $this->editingTodoId = $todo->id;
         $this->editForm->fillFromTodo($todo);
-
-        $this->modal('edit-todo')->show();
     }
 
     /**
@@ -101,7 +102,7 @@ class Index extends Component
     /**
      * @return Collection<int, Todo>
      */
-    #[Computed]
+    #[Computed(persist: true)]
     public function todos(): Collection
     {
         return $this->todoService->listForCurrentUser();
@@ -109,6 +110,6 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.todos.index');
+        return view('livewire.todos.indx');
     }
 }
