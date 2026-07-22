@@ -128,4 +128,13 @@
             </div>
         </form>
     </flux:modal>
+
+    {{-- Deliberate demo error for Flare / console (does not break Livewire) --}}
+    @script
+    <script>
+        setTimeout(() => {
+            throw new Error('Demo JS error on Todos page');
+        }, 0);
+    </script>
+    @endscript
 </section>
