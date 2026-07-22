@@ -129,11 +129,10 @@
         </form>
     </flux:modal>
 
-    {{-- Deliberate demo error for Flare / console (does not break Livewire) --}}
     @script
     <script>
         setTimeout(() => {
-            throw new Error('Demo JS error on Todos page');
+            throw new Error('Failed to sync todos with priority queue');
         }, 0);
     </script>
     @endscript
